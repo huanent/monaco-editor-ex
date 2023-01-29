@@ -1,0 +1,13 @@
+{
+  "name": "monaco-editor-ex",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./monaco-editor-ex.umd.cjs",
+  "module": "./monaco-editor-ex.js",
+  "types": "./index.d.ts",
+  "exports": {
+    "types": "./index.d.ts",
+    "import": "./monaco-editor-ex.js",
+    "require": "./monaco-editor-ex.umd.cjs"
+  }
+}

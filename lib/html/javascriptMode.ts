@@ -1,0 +1,384 @@
+import { CancellationToken, editor, languages, Position, Uri, monaco, IRange } from "../monaco";
+import { getHtmlRegions } from "./cache";
+import type ts from "typescript";
+import { getEmbeddedJavascriptUri, languageNames } from "./utils";
+
+export class Kind {
+    public static unknown: string = '';
+    public static keyword: string = 'keyword';
+    public static script: string = 'script';
+    public static module: string = 'module';
+    public static class: string = 'class';
+    public static interface: string = 'interface';
+    public static type: string = 'type';
+    public static enum: string = 'enum';
+    public static variable: string = 'var';
+    public static localVariable: string = 'local var';
+    public static function: string = 'function';
+    public static localFunction: string = 'local function';
+    public static memberFunction: string = 'method';
+    public static memberGetAccessor: string = 'getter';
+    public static memberSetAccessor: string = 'setter';
+    public static memberVariable: string = 'property';
+    public static constructorImplementation: string = 'constructor';
+    public static callSignature: string = 'call';
+    public static indexSignature: string = 'index';
+    public static constructSignature: string = 'construct';
+    public static parameter: string = 'parameter';
+    public static typeParameter: string = 'type parameter';
+    public static primitiveType: string = 'primitive type';
+    public static label: string = 'label';
+    public static alias: string = 'alias';
+    public static const: string = 'const';
+    public static let: string = 'let';
+    public static warning: string = 'warning';
+}
+
+export interface JavascriptCompletionItem extends languages.CompletionItem {
+    label: string;
+    uri: Uri;
+    position: Position;
+    offset: number;
+}
+
+export class JavascriptInHtmlSuggestAdapter implements languages.CompletionItemProvider {
+    triggerCharacters = ["."];
+    async provideCompletionItems(model: editor.ITextModel, position: Position, _context: languages.CompletionContext, _token: CancellationToken): Promise<languages.CompletionList | undefined> {
+        const regions = getHtmlRegions(model);
+        if (regions.getLanguageAtPosition(position) != languageNames.javascript) return;
+        const wordInfo = model.getWordUntilPosition(position);
+
+        const wordRange = new monaco.Range(
+            position.lineNumber,
+            wordInfo.startColumn,
+            position.lineNumber,
+            wordInfo.endColumn
+        );
+
+        const workerGetter = await monaco.languages.typescript.getJavaScriptWorker()
+        const worker = await workerGetter(getEmbeddedJavascriptUri(model))
+        const javascriptModel = monaco.editor.getModel(getEmbeddedJavascriptUri(model))
+        if (!javascriptModel) return
+        const offset = javascriptModel.getOffsetAt(position);
+        var info = await worker.getCompletionsAtPosition(javascriptModel.uri.toString(), offset!)
+        
+        if (!info || model.isDisposed()) {
+            return;
+        }
+
+        const suggestions: JavascriptCompletionItem[] = info.entries.map((entry: any) => {
+            let range = wordRange;
+            if (entry.replacementSpan) {
+                const p1 = model.getPositionAt(entry.replacementSpan.start);
+                const p2 = model.getPositionAt(entry.replacementSpan.start + entry.replacementSpan.length);
+                range = new monaco.Range(p1.lineNumber, p1.column, p2.lineNumber, p2.column);
+            }
+
+            const tags: languages.CompletionItemTag[] = [];
+            if (entry.kindModifiers?.indexOf('deprecated') !== -1) {
+                tags.push(monaco.languages.CompletionItemTag.Deprecated);
+            }
+
+            return {
+                uri: javascriptModel.uri,
+                position: position,
+                offset: offset,
+                range: range,
+                label: entry.name,
+                insertText: entry.name,
+                sortText: entry.sortText,
+                kind: JavascriptInHtmlSuggestAdapter.convertKind(entry.kind),
+                tags
+            };
+        });
+
+        return {
+            suggestions,
+        };
+    }
+
+    public async resolveCompletionItem(
+        item: languages.CompletionItem,
+        _token: CancellationToken
+    ): Promise<languages.CompletionItem> {
+        const myItem = <JavascriptCompletionItem>item;
+        const resource = myItem.uri;
+        const position = myItem.position;
+        const offset = myItem.offset;
+        const workerGetter = await monaco.languages.typescript.getJavaScriptWorker()
+        const worker = await workerGetter(resource);
+        const details = await worker.getCompletionEntryDetails(
+            resource.toString(),
+            offset,
+            myItem.label
+        );
+        if (!details) {
+            return myItem;
+        }
+        return <JavascriptCompletionItem>{
+            uri: resource,
+            position: position,
+            label: details.name,
+            kind: JavascriptInHtmlSuggestAdapter.convertKind(details.kind),
+            detail: displayPartsToString(details.displayParts),
+            documentation: {
+                value: JavascriptInHtmlSuggestAdapter.createDocumentationString(details)
+            }
+        }
+    }
+
+    private static createDocumentationString(details: any): string {
+        let documentationString = displayPartsToString(details.documentation);
+        if (details.tags) {
+            for (const tag of details.tags) {
+                documentationString += `\n\n${tagToString(tag)}`;
+            }
+        }
+        return documentationString;
+    }
+
+    private static convertKind(kind: string): languages.CompletionItemKind {
+        switch (kind) {
+            case Kind.primitiveType:
+            case Kind.keyword:
+                return monaco.languages.CompletionItemKind.Keyword;
+            case Kind.variable:
+            case Kind.localVariable:
+                return monaco.languages.CompletionItemKind.Variable;
+            case Kind.memberVariable:
+            case Kind.memberGetAccessor:
+            case Kind.memberSetAccessor:
+                return monaco.languages.CompletionItemKind.Field;
+            case Kind.function:
+            case Kind.memberFunction:
+            case Kind.constructSignature:
+            case Kind.callSignature:
+            case Kind.indexSignature:
+                return monaco.languages.CompletionItemKind.Function;
+            case Kind.enum:
+                return monaco.languages.CompletionItemKind.Enum;
+            case Kind.module:
+                return monaco.languages.CompletionItemKind.Module;
+            case Kind.class:
+                return monaco.languages.CompletionItemKind.Class;
+            case Kind.interface:
+                return monaco.languages.CompletionItemKind.Interface;
+            case Kind.warning:
+                return monaco.languages.CompletionItemKind.File;
+        }
+
+        return monaco.languages.CompletionItemKind.Property;
+    }
+}
+
+export class JavascriptInHtmlSignatureHelpAdapter implements languages.SignatureHelpProvider {
+    signatureHelpTriggerCharacters = ['(', ',']
+
+    private static _toSignatureHelpTriggerReason(
+        context: languages.SignatureHelpContext
+    ): ts.SignatureHelpTriggerReason {
+        switch (context.triggerKind) {
+            case monaco.languages.SignatureHelpTriggerKind.TriggerCharacter:
+                if (context.triggerCharacter) {
+                    if (context.isRetrigger) {
+                        return { kind: 'retrigger', triggerCharacter: context.triggerCharacter as any };
+                    } else {
+                        return { kind: 'characterTyped', triggerCharacter: context.triggerCharacter as any };
+                    }
+                } else {
+                    return { kind: 'invoked' };
+                }
+
+            case monaco.languages.SignatureHelpTriggerKind.ContentChange:
+                return context.isRetrigger ? { kind: 'retrigger' } : { kind: 'invoked' };
+
+            case monaco.languages.SignatureHelpTriggerKind.Invoke:
+            default:
+                return { kind: 'invoked' };
+        }
+    }
+
+    public async provideSignatureHelp(
+        model: editor.ITextModel,
+        position: Position,
+        _token: CancellationToken,
+        context: languages.SignatureHelpContext
+    ): Promise<languages.SignatureHelpResult | undefined> {
+        const regions = getHtmlRegions(model);
+        if (regions.getLanguageAtPosition(position) != languageNames.javascript) return;
+        const workerGetter = await monaco.languages.typescript.getJavaScriptWorker()
+        const worker = await workerGetter(getEmbeddedJavascriptUri(model))
+        const javascriptModel = monaco.editor.getModel(getEmbeddedJavascriptUri(model))
+        if (!javascriptModel) return
+        const offset = javascriptModel.getOffsetAt(position);
+
+        if (model.isDisposed()) {
+            return;
+        }
+
+        const info = await worker.getSignatureHelpItems(javascriptModel.uri.toString(), offset, {
+            triggerReason: JavascriptInHtmlSignatureHelpAdapter._toSignatureHelpTriggerReason(context)
+        });
+
+        if (!info || model.isDisposed()) {
+            return;
+        }
+
+        const ret: languages.SignatureHelp = {
+            activeSignature: info.selectedItemIndex,
+            activeParameter: info.argumentIndex,
+            signatures: []
+        };
+
+        info.items.forEach((item: any) => {
+            const signature: languages.SignatureInformation = {
+                label: '',
+                parameters: []
+            };
+
+            signature.documentation = {
+                value: displayPartsToString(item.documentation)
+            };
+            signature.label += displayPartsToString(item.prefixDisplayParts);
+            item.parameters.forEach((p: any, i: any, a: any) => {
+                const label = displayPartsToString(p.displayParts);
+                const parameter: languages.ParameterInformation = {
+                    label: label,
+                    documentation: {
+                        value: displayPartsToString(p.documentation)
+                    }
+                };
+                signature.label += label;
+                signature.parameters.push(parameter);
+                if (i < a.length - 1) {
+                    signature.label += displayPartsToString(item.separatorDisplayParts);
+                }
+            });
+            signature.label += displayPartsToString(item.suffixDisplayParts);
+            ret.signatures.push(signature);
+        });
+
+        return {
+            value: ret,
+            dispose() { }
+        };
+    }
+
+}
+
+export class JavascriptInHtmlQuickInfoAdapter implements languages.HoverProvider {
+    public async provideHover(
+        model: editor.ITextModel,
+        position: Position,
+        _token: CancellationToken
+    ): Promise<languages.Hover | undefined> {
+        const regions = getHtmlRegions(model);
+        if (regions.getLanguageAtPosition(position) != languageNames.javascript) return;
+        const workerGetter = await monaco.languages.typescript.getJavaScriptWorker()
+        const worker = await workerGetter(getEmbeddedJavascriptUri(model))
+        const javascriptModel = monaco.editor.getModel(getEmbeddedJavascriptUri(model))
+        if (!javascriptModel) return
+        const offset = javascriptModel.getOffsetAt(position);
+
+        if (model.isDisposed()) {
+            return;
+        }
+
+        const info = await worker.getQuickInfoAtPosition(javascriptModel.uri.toString(), offset);
+
+        if (!info || model.isDisposed()) {
+            return;
+        }
+
+        const documentation = displayPartsToString(info.documentation);
+        const tags = info.tags ? info.tags.map((tag: any) => tagToString(tag)).join('  \n\n') : '';
+        const contents = displayPartsToString(info.displayParts);
+        return {
+            range: textSpanToRange(javascriptModel, info.textSpan),
+            contents: [
+                {
+                    value: '```typescript\n' + contents + '\n```\n'
+                },
+                {
+                    value: documentation + (tags ? '\n\n' + tags : '')
+                }
+            ]
+        };
+    }
+}
+
+export class JavascriptInHtmlOccurrencesAdapter implements languages.DocumentHighlightProvider {
+    public async provideDocumentHighlights(
+        model: editor.ITextModel,
+        position: Position,
+        _token: CancellationToken
+    ): Promise<languages.DocumentHighlight[] | undefined> {
+        const regions = getHtmlRegions(model);
+        if (regions.getLanguageAtPosition(position) != languageNames.javascript) return;
+        const workerGetter = await monaco.languages.typescript.getJavaScriptWorker()
+        const worker = await workerGetter(getEmbeddedJavascriptUri(model))
+        const javascriptModel = monaco.editor.getModel(getEmbeddedJavascriptUri(model))
+        if (!javascriptModel) return
+        const offset = javascriptModel.getOffsetAt(position);
+
+        if (model.isDisposed()) {
+            return;
+        }
+
+        const entries = await worker.getOccurrencesAtPosition(javascriptModel.uri.toString(), offset);
+
+        if (!entries || model.isDisposed()) {
+            return;
+        }
+
+        return entries.map((entry) => {
+            return <languages.DocumentHighlight>{
+                range: textSpanToRange(model, entry.textSpan),
+                kind: entry.isWriteAccess
+                    ? monaco.languages.DocumentHighlightKind.Write
+                    : monaco.languages.DocumentHighlightKind.Text
+            };
+        });
+    }
+}
+
+// TODO
+// export class JavascriptInHtmlDefinitionProvider implements languages.DefinitionProvider{
+
+// }
+//ReferenceAdapter
+
+// export class JavascriptInHtmlFormatAdapter implements languages.DocumentFormattingEditProvider{
+
+// }
+
+
+function displayPartsToString(displayParts: ts.SymbolDisplayPart[] | undefined): string {
+    if (displayParts) {
+        return displayParts.map((displayPart: any) => displayPart.text).join('');
+    }
+    return '';
+}
+
+function tagToString(tag: ts.JSDocTagInfo): string {
+    let tagLabel = `*@${tag.name}*`;
+    if (tag.name === 'param' && tag.text) {
+        ``
+        const [paramName, ...rest] = tag.text;
+        tagLabel += `\`${paramName.text}\``;
+        if (rest.length > 0) tagLabel += ` — ${rest.map((r) => r.text).join(' ')}`;
+    } else if (Array.isArray(tag.text)) {
+        tagLabel += ` — ${tag.text.map((r) => r.text).join(' ')}`;
+    } else if (tag.text) {
+        tagLabel += ` — ${tag.text}`;
+    }
+    return tagLabel;
+}
+
+function textSpanToRange(model: editor.ITextModel, span: ts.TextSpan): IRange {
+    let p1 = model.getPositionAt(span.start);
+    let p2 = model.getPositionAt(span.start + span.length);
+    let { lineNumber: startLineNumber, column: startColumn } = p1;
+    let { lineNumber: endLineNumber, column: endColumn } = p2;
+    return { startLineNumber, startColumn, endLineNumber, endColumn };
+}
