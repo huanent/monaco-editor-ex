@@ -1,17 +1,5 @@
 import type * as Monaco from "monaco-editor/esm/vs/editor/editor.api";
-
-export type {
-    CancellationToken,
-    editor,
-    IEvent,
-    IMarkdownString,
-    IRange,
-    languages,
-    Position,
-    Range,
-    Uri,
-    IDisposable
-} from "monaco-editor/esm/vs/editor/editor.api";
+export type * from "monaco-editor/esm/vs/editor/editor.api";
 
 export let monaco: typeof Monaco
 
