@@ -1,13 +1,13 @@
 import { defineConfig } from 'vite'
 import dts from "vite-plugin-dts";
-import { resolve } from 'node:path'
 
 export default defineConfig({
   build: {
     lib: {
       entry: 'lib/index.ts',
-      name: 'monaco-editor-ex',
+      name: 'MonacoEditorEx',
       fileName: 'monaco-editor-ex',
+      formats: ["es", "umd", "iife"]
     },
     rollupOptions: {
       external: ["monaco-editor/esm/vs/editor/editor.api"],
