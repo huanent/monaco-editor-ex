@@ -9,6 +9,34 @@ Many features that are only available in vscode are brought to monaco-editor,try
 * javascript and style tag code completion
 * style color preview and edit
 * auto close tag 
-<!-- ### javascript
+### javascript
+TODO
+### css
+TODO
 
-### css -->
+## Usage
+### html
+``` html
+   <div id="container" style="width:800px;height:600px;border:1px solid grey"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.34.1/min/vs/loader.js"></script>
+    <script src="../../dist/monaco-editor-ex.iife.js"></script>
+    <script>
+        require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.34.1/min/vs' } });
+        require(['vs/editor/editor.main'], function () {
+            MonacoEditorEx.initMonaco(monaco);
+            var editor = monaco.editor.create(document.getElementById('container'), {
+                value: `<div><div>`,
+                language: 'html'
+            });
+        });
+    </script>
+```
+### vite
+import [userWorker.ts]()
+``` js
+import * as monaco from "monaco-editor"
+import { initMonaco } from "monaco-editor-ex";
+
+initMonaco(monaco)
+```

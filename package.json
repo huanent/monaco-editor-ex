@@ -1,32 +1,45 @@
 {
-  "name": "vite-app",
-  "private": true,
-  "version": "0.0.0",
+  "name": "monaco-editor-ex",
+  "version": "1.0.0",
   "type": "module",
-  "files": [
-    "dist",
-    "index.d.ts"
+  "author": {
+    "name": "huanent",
+    "email": "huanent@icloud.com",
+    "url": "https://github.com/huanent"
+  },
+  "description": "Powerful monaco editor extension,support js css features in html and more",
+  "peerDependencies": {
+    "monaco-editor": ">=0.34.1"
+  },
+  "keywords": [
+    "monaco",
+    "monaco-editor",
+    "extension",
+    "js in html",
+    "auto close tag"
   ],
-  "main": "./dist/counter.umd.cjs",
-  "module": "./dist/counter.js",
-  "types": "./index.d.ts",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/monaco-editor-ex.umd.cjs",
+  "module": "./dist/monaco-editor-ex.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    "types": "./index.d.ts",
-    "import": "./dist/counter.js",
-    "require": "./dist/counter.umd.cjs"
+    "types": "./dist/index.d.ts",
+    "import": "./dist/monaco-editor-ex.js",
+    "require": "./dist/monaco-editor-ex.umd.cjs"
   },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "publish": "npm run build && cd ./dist && npm --registry https://registry.npmjs.org --access public publish"
+    "publish": "npm run build && npm --registry https://registry.npmjs.org --access public publish"
   },
   "devDependencies": {
     "monaco-editor": "^0.34.1",
     "typescript": "^5.0.0-beta",
     "vite": "^4.0.0",
-    "vite-plugin-dts": "^1.7.1"
-  },
-  "dependencies": {
+    "vite-plugin-dts": "^1.7.1",
     "vscode-css-languageservice": "^6.2.2",
     "vscode-html-languageservice": "^5.0.4"
   }

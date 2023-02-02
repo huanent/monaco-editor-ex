@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "monaco-editor": "^0.34.1",
-    "monaco-editor-ex": "file:../../dist",
+    "monaco-editor-ex": "file:../../",
     "vue": "^3.2.45"
   },
   "devDependencies": {
