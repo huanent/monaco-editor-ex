@@ -1,4 +1,4 @@
-import { CancellationToken, editor, languages, Position, Uri, monaco, IRange } from "../monaco";
+import { CancellationToken, editor, languages, Position, Uri, monaco, IRange, Range } from "../monaco";
 import { getHtmlRegions } from "./cache";
 import type ts from "typescript";
 import { getEmbeddedJavascriptUri, languageNames } from "./utils";
@@ -61,7 +61,7 @@ export class JavascriptInHtmlSuggestAdapter implements languages.CompletionItemP
         if (!javascriptModel) return
         const offset = javascriptModel.getOffsetAt(position);
         var info = await worker.getCompletionsAtPosition(javascriptModel.uri.toString(), offset!)
-        
+
         if (!info || model.isDisposed()) {
             return;
         }
@@ -342,15 +342,68 @@ export class JavascriptInHtmlOccurrencesAdapter implements languages.DocumentHig
     }
 }
 
+export class JavascriptInHtmlFormattingAdapter implements languages.DocumentFormattingEditProvider {
+    async provideDocumentFormattingEdits(model: editor.ITextModel, options: languages.FormattingOptions, _token: CancellationToken): Promise<languages.TextEdit[] | undefined> {
+        debugger
+        console.log("aa")
+        const workerGetter = await monaco.languages.typescript.getJavaScriptWorker()
+        const uri = getEmbeddedJavascriptUri(model);
+        const worker = await workerGetter(uri)
+        const javascriptModel = monaco.editor.getModel(uri)
+        if (!javascriptModel) return;
+        const edits = await worker.getFormattingEditsForDocument(uri.toString(), options)
+       
+        if (!edits || model.isDisposed()) {
+            return;
+        }
+        return edits.map((edit) => this._convertTextChanges(model, edit));
+    }
+
+    protected _convertTextChanges(
+        model: editor.ITextModel,
+        change: ts.TextChange
+    ): languages.TextEdit {
+        return {
+            text: change.newText,
+            range: textSpanToRange(model, change.span)
+        };
+    }
+}
+
+export class JavascriptInHtmlRangeFormattingAdapter implements languages.DocumentRangeFormattingEditProvider {
+    async provideDocumentRangeFormattingEdits(model: editor.ITextModel, _range: Range, options: languages.FormattingOptions, _token: CancellationToken): Promise<languages.TextEdit[] | undefined> {
+        debugger
+        console.log("aa")
+        const workerGetter = await monaco.languages.typescript.getJavaScriptWorker()
+        const uri = getEmbeddedJavascriptUri(model);
+        const worker = await workerGetter(uri)
+        const javascriptModel = monaco.editor.getModel(uri)
+        if (!javascriptModel) return;
+        const edits = await worker.getFormattingEditsForDocument(uri.toString(), options)
+       
+        if (!edits || model.isDisposed()) {
+            return;
+        }
+        return edits.map((edit) => this._convertTextChanges(model, edit));
+    }
+
+    protected _convertTextChanges(
+        model: editor.ITextModel,
+        change: ts.TextChange
+    ): languages.TextEdit {
+        return {
+            text: change.newText,
+            range: textSpanToRange(model, change.span)
+        };
+    }
+}
+
+
 // TODO
 // export class JavascriptInHtmlDefinitionProvider implements languages.DefinitionProvider{
 
 // }
 //ReferenceAdapter
-
-// export class JavascriptInHtmlFormatAdapter implements languages.DocumentFormattingEditProvider{
-
-// }
 
 
 function displayPartsToString(displayParts: ts.SymbolDisplayPart[] | undefined): string {

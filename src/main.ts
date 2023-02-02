@@ -14,7 +14,10 @@ const model = monaco.editor.createModel(`
   
 </div>
 <script>
+  function foo(){
+           return "bar";
 
+        }
 </${'script'}>
 `, "html", monaco.Uri.file("index.html"))
 

@@ -6,7 +6,9 @@ import {
     JavascriptInHtmlSuggestAdapter,
     JavascriptInHtmlSignatureHelpAdapter,
     JavascriptInHtmlQuickInfoAdapter,
-    JavascriptInHtmlOccurrencesAdapter
+    JavascriptInHtmlOccurrencesAdapter,
+    JavascriptInHtmlFormattingAdapter,
+    JavascriptInHtmlRangeFormattingAdapter
 } from "./javascriptMode";
 
 import {
@@ -28,12 +30,9 @@ export function setupHtml() {
     monaco.languages.registerSignatureHelpProvider(languageNames.html, new JavascriptInHtmlSignatureHelpAdapter())
     monaco.languages.registerHoverProvider(languageNames.html, new JavascriptInHtmlQuickInfoAdapter())
     monaco.languages.registerDocumentHighlightProvider(languageNames.html, new JavascriptInHtmlOccurrencesAdapter())
-    // monaco.languages.registerDocumentFormattingEditProvider
-    // monaco.languages.registerDocumentRangeFormattingEditProvider(
-    //     languageNames.html,
-    //     new languageFeatures.FormatAdapter(worker)
-    // );
-
+    monaco.languages.registerDocumentFormattingEditProvider(languageNames.html, new JavascriptInHtmlFormattingAdapter())
+    monaco.languages.registerDocumentRangeFormattingEditProvider(languageNames.html, new JavascriptInHtmlRangeFormattingAdapter());
+    
     monaco.languages.registerCompletionItemProvider(languageNames.html, new CssInHtmlSuggestAdapter())
     monaco.languages.registerHoverProvider(languageNames.html, new CssInHtmlHoverAdapter())
     monaco.languages.registerDocumentHighlightProvider(languageNames.html, new CssInHtmlDocumentHighlightAdapter())

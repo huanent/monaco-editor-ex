@@ -1,5 +1,5 @@
 import { htmlService, languageNames, modelToDocument, toLsPosition } from "./utils";
-import { editor,monaco} from "../monaco";
+import { editor, monaco} from "../monaco";
 
 export class HtmlAutoCloseTagAdapter {
     constructor() {
