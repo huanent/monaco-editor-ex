@@ -4,6 +4,8 @@
     
 Many features that are only available in vscode are brought to monaco-editor,try it now! [online demo](https://huanent.github.io/monaco-editor-ex/)
 
+![](https://huanent.github.io/monaco-editor-ex/img/js-completion-in-html.png)
+
 ## available features
 ### html
 * javascript and style tag code completion
