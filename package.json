@@ -8,6 +8,11 @@
     "url": "https://github.com/huanent"
   },
   "description": "Powerful monaco editor extension,support js css features in html and more",
+  "repository": {
+    "url": "https://github.com/huanent/monaco-editor-ex.git",
+    "type": "git"
+  },
+  "homepage": "https://github.com/huanent/monaco-editor-ex",
   "peerDependencies": {
     "monaco-editor": ">=0.34.1"
   },
