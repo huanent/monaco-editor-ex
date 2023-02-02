@@ -1,5 +1,7 @@
 # monaco-editor-ex
 
+[![](https://img.shields.io/npm/v/monaco-editor-ex?style=flat-square)](https://www.npmjs.com/package/monaco-editor-ex)
+
 ```monaco-editor-ex``` is a powerful monaco-editor extension.
     
 Many features that are only available in vscode are brought to monaco-editor,try it now! [online demo](https://huanent.github.io/monaco-editor-ex/)
