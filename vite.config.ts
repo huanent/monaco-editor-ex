@@ -18,5 +18,8 @@ export default defineConfig({
       },
     },
   },
-  plugins: [dts({ entryRoot: 'lib/index.ts', outputDir: "dist/lib" })]
+  plugins: [dts({ entryRoot: 'lib/index.ts', outputDir: "dist/lib" })],
+  test: {
+    environment: "happy-dom"
+  }
 })
