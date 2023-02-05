@@ -1,38 +1,11 @@
 import { CancellationToken, editor, languages, Position, Uri, monaco, IRange, Range } from "../monaco";
 import type ts from "typescript";
-import { getEmbeddedJavascriptUri, languageNames } from "./utils";
+import { getEmbeddedJavascriptUri, textSpanToRange } from "./utils";
 import { htmlRegionCache } from "./htmlRegionCache";
-
-export class Kind {
-    public static unknown: string = '';
-    public static keyword: string = 'keyword';
-    public static script: string = 'script';
-    public static module: string = 'module';
-    public static class: string = 'class';
-    public static interface: string = 'interface';
-    public static type: string = 'type';
-    public static enum: string = 'enum';
-    public static variable: string = 'var';
-    public static localVariable: string = 'local var';
-    public static function: string = 'function';
-    public static localFunction: string = 'local function';
-    public static memberFunction: string = 'method';
-    public static memberGetAccessor: string = 'getter';
-    public static memberSetAccessor: string = 'setter';
-    public static memberVariable: string = 'property';
-    public static constructorImplementation: string = 'constructor';
-    public static callSignature: string = 'call';
-    public static indexSignature: string = 'index';
-    public static constructSignature: string = 'construct';
-    public static parameter: string = 'parameter';
-    public static typeParameter: string = 'type parameter';
-    public static primitiveType: string = 'primitive type';
-    public static label: string = 'label';
-    public static alias: string = 'alias';
-    public static const: string = 'const';
-    public static let: string = 'let';
-    public static warning: string = 'warning';
-}
+import { getJavascriptWorker } from "../javascript/utils";
+import { getWordRange } from "../utils";
+import { Kind } from "./constants";
+import { languageNames } from "../constants";
 
 export interface JavascriptCompletionItem extends languages.CompletionItem {
     label: string;
@@ -46,17 +19,8 @@ export class JavascriptInHtmlSuggestAdapter implements languages.CompletionItemP
     async provideCompletionItems(model: editor.ITextModel, position: Position, _context: languages.CompletionContext, _token: CancellationToken): Promise<languages.CompletionList | undefined> {
         const regions = htmlRegionCache.getCache(model);
         if (regions.getLanguageAtPosition(position) != languageNames.javascript) return;
-        const wordInfo = model.getWordUntilPosition(position);
-
-        const wordRange = new monaco.Range(
-            position.lineNumber,
-            wordInfo.startColumn,
-            position.lineNumber,
-            wordInfo.endColumn
-        );
-
-        const workerGetter = await monaco.languages.typescript.getJavaScriptWorker()
-        const worker = await workerGetter(getEmbeddedJavascriptUri(model))
+        const wordRange = getWordRange(model, position);
+        const worker = await getJavascriptWorker(model.uri)
         const javascriptModel = monaco.editor.getModel(getEmbeddedJavascriptUri(model))
         if (!javascriptModel) return
         const offset = javascriptModel.getOffsetAt(position);
@@ -344,15 +308,13 @@ export class JavascriptInHtmlOccurrencesAdapter implements languages.DocumentHig
 
 export class JavascriptInHtmlFormattingAdapter implements languages.DocumentFormattingEditProvider {
     async provideDocumentFormattingEdits(model: editor.ITextModel, options: languages.FormattingOptions, _token: CancellationToken): Promise<languages.TextEdit[] | undefined> {
-        debugger
-        console.log("aa")
         const workerGetter = await monaco.languages.typescript.getJavaScriptWorker()
         const uri = getEmbeddedJavascriptUri(model);
         const worker = await workerGetter(uri)
         const javascriptModel = monaco.editor.getModel(uri)
         if (!javascriptModel) return;
         const edits = await worker.getFormattingEditsForDocument(uri.toString(), options)
-       
+
         if (!edits || model.isDisposed()) {
             return;
         }
@@ -372,15 +334,13 @@ export class JavascriptInHtmlFormattingAdapter implements languages.DocumentForm
 
 export class JavascriptInHtmlRangeFormattingAdapter implements languages.DocumentRangeFormattingEditProvider {
     async provideDocumentRangeFormattingEdits(model: editor.ITextModel, _range: Range, options: languages.FormattingOptions, _token: CancellationToken): Promise<languages.TextEdit[] | undefined> {
-        debugger
-        console.log("aa")
         const workerGetter = await monaco.languages.typescript.getJavaScriptWorker()
         const uri = getEmbeddedJavascriptUri(model);
         const worker = await workerGetter(uri)
         const javascriptModel = monaco.editor.getModel(uri)
         if (!javascriptModel) return;
         const edits = await worker.getFormattingEditsForDocument(uri.toString(), options)
-       
+
         if (!edits || model.isDisposed()) {
             return;
         }
@@ -426,12 +386,4 @@ function tagToString(tag: ts.JSDocTagInfo): string {
         tagLabel += ` — ${tag.text}`;
     }
     return tagLabel;
-}
-
-function textSpanToRange(model: editor.ITextModel, span: ts.TextSpan): IRange {
-    let p1 = model.getPositionAt(span.start);
-    let p2 = model.getPositionAt(span.start + span.length);
-    let { lineNumber: startLineNumber, column: startColumn } = p1;
-    let { lineNumber: endLineNumber, column: endColumn } = p2;
-    return { startLineNumber, startColumn, endLineNumber, endColumn };
 }

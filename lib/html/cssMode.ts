@@ -25,8 +25,10 @@ import {
     Uri
 } from "../monaco"
 
-import { cssService, languageNames, toLsPosition } from "./utils";
+import { cssService, toLsPosition } from "./utils";
 import { htmlRegionCache } from "./htmlRegionCache";
+import { languageNames } from "../constants";
+import { getWordRange } from "../utils";
 
 
 export class CssInHtmlSuggestAdapter implements languages.CompletionItemProvider {
@@ -34,14 +36,7 @@ export class CssInHtmlSuggestAdapter implements languages.CompletionItemProvider
     async provideCompletionItems(model: editor.ITextModel, position: Position, _context: languages.CompletionContext, _token: CancellationToken): Promise<languages.CompletionList | undefined> {
         const regions = htmlRegionCache.getCache(model);
         if (regions.getLanguageAtPosition(position) != languageNames.css) return;
-        const wordInfo = model.getWordUntilPosition(position);
-
-        const wordRange = new monaco.Range(
-            position.lineNumber,
-            wordInfo.startColumn,
-            position.lineNumber,
-            wordInfo.endColumn
-        );
+        const wordRange = getWordRange(model, position);
 
         const cssDocument = regions.getEmbeddedDocument(languageNames.css, true);
         if (!cssDocument) return;
@@ -210,7 +205,6 @@ export class CssInHtmlDocumentColorAdapter implements languages.DocumentColorPro
         });
     }
 }
-
 
 export class CssInHtmlDocumentSymbolAdapter implements languages.DocumentSymbolProvider {
     async provideDocumentSymbols(model: editor.ITextModel, _token: CancellationToken): Promise<languages.DocumentSymbol[] | undefined> {

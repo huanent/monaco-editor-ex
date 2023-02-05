@@ -1,5 +1,4 @@
 import { monaco } from "../monaco";
-import { languageNames } from "./utils";
 import { HtmlAutoCloseTagAdapter } from "./htmlMode";
 
 import {
@@ -22,6 +21,7 @@ import {
     CssInHtmlRenameAdapter,
     CssInHtmlFoldingRangeAdapter
 } from "./cssMode";
+import { languageNames } from "../constants";
 
 
 export function setupHtml() {

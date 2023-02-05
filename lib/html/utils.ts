@@ -1,15 +1,11 @@
 import { getLanguageService, Position as HtmlPosition, TextDocument } from "vscode-html-languageservice";
-import { editor, Position,monaco } from "../monaco";
+import { editor, Position,monaco, IRange } from "../monaco";
 import { getCSSLanguageService } from "vscode-css-languageservice"
+import type ts from "typescript";
+import { languageNames } from "../constants";
 
 export const htmlService = getLanguageService();
 export const cssService = getCSSLanguageService();
-
-export const languageNames = {
-    javascript: "javascript",
-    css: "css",
-    html: "html",
-}
 
 export function toLsPosition(position: Position): HtmlPosition {
     return {
@@ -33,4 +29,12 @@ function getEmbeddedUri(model: editor.IModel, languageId: string) {
 
 export function getEmbeddedJavascriptUri(model: editor.IModel) {
     return getEmbeddedUri(model, languageNames.javascript)
+}
+
+export function textSpanToRange(model: editor.ITextModel, span: ts.TextSpan): IRange {
+    let p1 = model.getPositionAt(span.start);
+    let p2 = model.getPositionAt(span.start + span.length);
+    let { lineNumber: startLineNumber, column: startColumn } = p1;
+    let { lineNumber: endLineNumber, column: endColumn } = p2;
+    return { startLineNumber, startColumn, endLineNumber, endColumn };
 }
