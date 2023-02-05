@@ -25,14 +25,14 @@ import {
     Uri
 } from "../monaco"
 
-import { getHtmlRegions } from "./cache";
 import { cssService, languageNames, toLsPosition } from "./utils";
+import { htmlRegionCache } from "./htmlRegionCache";
 
 
 export class CssInHtmlSuggestAdapter implements languages.CompletionItemProvider {
     triggerCharacters = ['/', '-', ':'];
     async provideCompletionItems(model: editor.ITextModel, position: Position, _context: languages.CompletionContext, _token: CancellationToken): Promise<languages.CompletionList | undefined> {
-        const regions = getHtmlRegions(model);
+        const regions = htmlRegionCache.getCache(model);
         if (regions.getLanguageAtPosition(position) != languageNames.css) return;
         const wordInfo = model.getWordUntilPosition(position);
 
@@ -104,7 +104,7 @@ export class CssInHtmlHoverAdapter implements languages.HoverProvider {
         position: Position,
         _token: CancellationToken
     ): Promise<languages.Hover | undefined> {
-        const regions = getHtmlRegions(model);
+        const regions = htmlRegionCache.getCache(model);
         if (regions.getLanguageAtPosition(position) != languageNames.css) return;
         const cssDocument = regions.getEmbeddedDocument(languageNames.css, true);
         const style = cssService.parseStylesheet(cssDocument);
@@ -123,7 +123,7 @@ export class CssInHtmlDocumentHighlightAdapter implements languages.DocumentHigh
         position: Position,
         _token: CancellationToken
     ): Promise<languages.DocumentHighlight[] | undefined> {
-        const regions = getHtmlRegions(model);
+        const regions = htmlRegionCache.getCache(model);
         if (regions.getLanguageAtPosition(position) != languageNames.css) return;
         const cssDocument = regions.getEmbeddedDocument(languageNames.css, true);
         const style = cssService.parseStylesheet(cssDocument);
@@ -141,7 +141,7 @@ export class CssInHtmlDocumentHighlightAdapter implements languages.DocumentHigh
 
 export class CssInHtmlDefinitionAdapter implements languages.DefinitionProvider {
     async provideDefinition(model: editor.ITextModel, position: Position, _token: CancellationToken): Promise<languages.Definition | undefined> {
-        const regions = getHtmlRegions(model);
+        const regions = htmlRegionCache.getCache(model);
         if (regions.getLanguageAtPosition(position) != languageNames.css) return;
         const cssDocument = regions.getEmbeddedDocument(languageNames.css, true);
         const style = cssService.parseStylesheet(cssDocument);
@@ -157,7 +157,7 @@ export class CssInHtmlDefinitionAdapter implements languages.DefinitionProvider 
 
 export class CssInHtmlReferenceAdapter implements languages.ReferenceProvider {
     async provideReferences(model: editor.ITextModel, position: Position, _context: languages.ReferenceContext, _token: CancellationToken): Promise<languages.Location[] | undefined> {
-        const regions = getHtmlRegions(model);
+        const regions = htmlRegionCache.getCache(model);
         if (regions.getLanguageAtPosition(position) != languageNames.css) return;
         const cssDocument = regions.getEmbeddedDocument(languageNames.css, true);
         const style = cssService.parseStylesheet(cssDocument);
@@ -172,7 +172,7 @@ export class CssInHtmlDocumentColorAdapter implements languages.DocumentColorPro
         model: editor.IReadOnlyModel,
         _token: CancellationToken
     ): Promise<languages.IColorInformation[] | undefined> {
-        const regions = getHtmlRegions(model);
+        const regions = htmlRegionCache.getCache(model);
         const cssDocument = regions.getEmbeddedDocument(languageNames.css, true);
         const style = cssService.parseStylesheet(cssDocument);
         const infos = cssService.findDocumentColors(cssDocument, style)
@@ -189,7 +189,7 @@ export class CssInHtmlDocumentColorAdapter implements languages.DocumentColorPro
         info: languages.IColorInformation,
         _token: CancellationToken
     ): Promise<languages.IColorPresentation[] | undefined> {
-        const regions = getHtmlRegions(model);
+        const regions = htmlRegionCache.getCache(model);
         const cssDocument = regions.getEmbeddedDocument(languageNames.css, true);
         const style = cssService.parseStylesheet(cssDocument);
         const presentations = cssService.getColorPresentations(cssDocument, style, info.color, fromRange(info.range)!)
@@ -214,7 +214,7 @@ export class CssInHtmlDocumentColorAdapter implements languages.DocumentColorPro
 
 export class CssInHtmlDocumentSymbolAdapter implements languages.DocumentSymbolProvider {
     async provideDocumentSymbols(model: editor.ITextModel, _token: CancellationToken): Promise<languages.DocumentSymbol[] | undefined> {
-        const regions = getHtmlRegions(model);
+        const regions = htmlRegionCache.getCache(model);
         const cssDocument = regions.getEmbeddedDocument(languageNames.css, true);
         const style = cssService.parseStylesheet(cssDocument);
         const items = cssService.findDocumentSymbols(cssDocument, style);
@@ -235,7 +235,7 @@ export class CssInHtmlDocumentSymbolAdapter implements languages.DocumentSymbolP
 
 export class CssInHtmlRenameAdapter implements languages.RenameProvider {
     provideRenameEdits(model: editor.ITextModel, position: Position, newName: string, _token: CancellationToken): languages.ProviderResult<languages.WorkspaceEdit & languages.Rejection> {
-        const regions = getHtmlRegions(model);
+        const regions = htmlRegionCache.getCache(model);
         if (regions.getLanguageAtPosition(position) != languageNames.css) return;
         const cssDocument = regions.getEmbeddedDocument(languageNames.css, true);
         const style = cssService.parseStylesheet(cssDocument);
@@ -248,7 +248,7 @@ export class CssInHtmlFoldingRangeAdapter implements languages.FoldingRangeProvi
     onDidChange?: IEvent<this> | undefined;
     async provideFoldingRanges(model: editor.ITextModel, _context: languages.FoldingContext, _token: CancellationToken): Promise<languages.FoldingRange[] | undefined> {
 
-        const regions = getHtmlRegions(model);
+        const regions = htmlRegionCache.getCache(model);
         const cssDocument = regions.getEmbeddedDocument(languageNames.css, true);
         const ranges = cssService.getFoldingRanges(cssDocument)
         return ranges.map((range) => {

@@ -1,8 +1,8 @@
 import type * as Monaco from "monaco-editor/esm/vs/editor/editor.api";
 import { setupHtml } from "./html";
-import { getHtmlRegions } from "./html/cache";
 import { languageNames } from "./html/utils";
 import { tryInitMonaco, monaco,IDisposable, editor, Uri  } from "./monaco";
+import { htmlRegionCache } from "./html/htmlRegionCache";
 
 export function initMonaco(monaco: typeof Monaco) {
   if (!tryInitMonaco(monaco)) return
@@ -47,13 +47,13 @@ class javascriptInHtmlAdapter {
   }
 
   private createEmbeddedModel(model: editor.IModel) {
-    const content = getHtmlRegions(model).getEmbeddedDocument(languageNames.javascript, true)
+    const content = htmlRegionCache.getCache(model).getEmbeddedDocument(languageNames.javascript, true)
     const uri = monaco.Uri.joinPath(model.uri, languageNames.javascript);
     monaco.editor.createModel(content.getText(), languageNames.javascript, uri)
 
     model.onDidChangeContent(() => {
       if (model.getLanguageId() == languageNames.html) {
-        const content = getHtmlRegions(model).getEmbeddedDocument(languageNames.javascript, true)
+        const content = htmlRegionCache.getCache(model).getEmbeddedDocument(languageNames.javascript, true)
         const embeddedModel = monaco.editor.getModel(uri);
         embeddedModel?.setValue(content.getText()) //TODO 优化
       }

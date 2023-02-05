@@ -1,7 +1,7 @@
 import { CancellationToken, editor, languages, Position, Uri, monaco, IRange, Range } from "../monaco";
-import { getHtmlRegions } from "./cache";
 import type ts from "typescript";
 import { getEmbeddedJavascriptUri, languageNames } from "./utils";
+import { htmlRegionCache } from "./htmlRegionCache";
 
 export class Kind {
     public static unknown: string = '';
@@ -44,7 +44,7 @@ export interface JavascriptCompletionItem extends languages.CompletionItem {
 export class JavascriptInHtmlSuggestAdapter implements languages.CompletionItemProvider {
     triggerCharacters = ["."];
     async provideCompletionItems(model: editor.ITextModel, position: Position, _context: languages.CompletionContext, _token: CancellationToken): Promise<languages.CompletionList | undefined> {
-        const regions = getHtmlRegions(model);
+        const regions = htmlRegionCache.getCache(model);
         if (regions.getLanguageAtPosition(position) != languageNames.javascript) return;
         const wordInfo = model.getWordUntilPosition(position);
 
@@ -204,7 +204,7 @@ export class JavascriptInHtmlSignatureHelpAdapter implements languages.Signature
         _token: CancellationToken,
         context: languages.SignatureHelpContext
     ): Promise<languages.SignatureHelpResult | undefined> {
-        const regions = getHtmlRegions(model);
+        const regions = htmlRegionCache.getCache(model);
         if (regions.getLanguageAtPosition(position) != languageNames.javascript) return;
         const workerGetter = await monaco.languages.typescript.getJavaScriptWorker()
         const worker = await workerGetter(getEmbeddedJavascriptUri(model))
@@ -272,7 +272,7 @@ export class JavascriptInHtmlQuickInfoAdapter implements languages.HoverProvider
         position: Position,
         _token: CancellationToken
     ): Promise<languages.Hover | undefined> {
-        const regions = getHtmlRegions(model);
+        const regions = htmlRegionCache.getCache(model);
         if (regions.getLanguageAtPosition(position) != languageNames.javascript) return;
         const workerGetter = await monaco.languages.typescript.getJavaScriptWorker()
         const worker = await workerGetter(getEmbeddedJavascriptUri(model))
@@ -313,7 +313,7 @@ export class JavascriptInHtmlOccurrencesAdapter implements languages.DocumentHig
         position: Position,
         _token: CancellationToken
     ): Promise<languages.DocumentHighlight[] | undefined> {
-        const regions = getHtmlRegions(model);
+        const regions = htmlRegionCache.getCache(model);
         if (regions.getLanguageAtPosition(position) != languageNames.javascript) return;
         const workerGetter = await monaco.languages.typescript.getJavaScriptWorker()
         const worker = await workerGetter(getEmbeddedJavascriptUri(model))
