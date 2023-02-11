@@ -1,9 +1,9 @@
 import { monaco } from "../monaco";
-import { HtmlAutoCloseTagAdapter } from "./htmlMode";
+export * from "./autoCloseTag"
+export * from "./javascriptSuggest"
+export * from "./javascriptSignatureHelp"
 
 import {
-    JavascriptInHtmlSuggestAdapter,
-    JavascriptInHtmlSignatureHelpAdapter,
     JavascriptInHtmlQuickInfoAdapter,
     JavascriptInHtmlOccurrencesAdapter,
     JavascriptInHtmlFormattingAdapter,
@@ -25,14 +25,12 @@ import { languageNames } from "../constants";
 
 
 export function setupHtml() {
-    new HtmlAutoCloseTagAdapter()
-    monaco.languages.registerCompletionItemProvider(languageNames.html, new JavascriptInHtmlSuggestAdapter())
-    monaco.languages.registerSignatureHelpProvider(languageNames.html, new JavascriptInHtmlSignatureHelpAdapter())
+   
     monaco.languages.registerHoverProvider(languageNames.html, new JavascriptInHtmlQuickInfoAdapter())
     monaco.languages.registerDocumentHighlightProvider(languageNames.html, new JavascriptInHtmlOccurrencesAdapter())
     monaco.languages.registerDocumentFormattingEditProvider(languageNames.html, new JavascriptInHtmlFormattingAdapter())
     monaco.languages.registerDocumentRangeFormattingEditProvider(languageNames.html, new JavascriptInHtmlRangeFormattingAdapter());
-    
+
     monaco.languages.registerCompletionItemProvider(languageNames.html, new CssInHtmlSuggestAdapter())
     monaco.languages.registerHoverProvider(languageNames.html, new CssInHtmlHoverAdapter())
     monaco.languages.registerDocumentHighlightProvider(languageNames.html, new CssInHtmlDocumentHighlightAdapter())

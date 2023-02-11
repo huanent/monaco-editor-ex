@@ -1,13 +1,15 @@
 import type * as Monaco from "monaco-editor/esm/vs/editor/editor.api";
-import { setupHtml } from "./html";
-import { tryInitMonaco, monaco,IDisposable, editor, Uri  } from "./monaco";
+import { setupHtml, useAutoCloseTag, useJavascriptSuggestInHtml,useSignatureHelpInHtml } from "./html";
+import { tryInitMonaco, monaco, IDisposable, editor, Uri } from "./monaco";
 import { htmlRegionCache } from "./html/htmlRegionCache";
 import { languageNames } from "./constants";
 
 export function initMonaco(monaco: typeof Monaco) {
   if (!tryInitMonaco(monaco)) return
   setupHtml();
-
+  useAutoCloseTag()
+  useJavascriptSuggestInHtml();
+  useSignatureHelpInHtml();
   new javascriptInHtmlAdapter();
 }
 
