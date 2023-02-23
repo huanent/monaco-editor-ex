@@ -100,6 +100,6 @@ class JavascriptInHtmlSignatureHelpAdapter implements languages.SignatureHelpPro
 
 }
 
-export function useSignatureHelpInHtml() {
+export function useJavascriptSignatureHelpInHtml() {
     monaco.languages.registerSignatureHelpProvider(languageNames.html, new JavascriptInHtmlSignatureHelpAdapter())
 }

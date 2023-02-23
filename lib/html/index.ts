@@ -2,9 +2,9 @@ import { monaco } from "../monaco";
 export * from "./autoCloseTag"
 export * from "./javascriptSuggest"
 export * from "./javascriptSignatureHelp"
+export * from "./javascriptQuickInfo"
 
 import {
-    JavascriptInHtmlQuickInfoAdapter,
     JavascriptInHtmlOccurrencesAdapter,
     JavascriptInHtmlFormattingAdapter,
     JavascriptInHtmlRangeFormattingAdapter
@@ -26,7 +26,6 @@ import { languageNames } from "../constants";
 
 export function setupHtml() {
    
-    monaco.languages.registerHoverProvider(languageNames.html, new JavascriptInHtmlQuickInfoAdapter())
     monaco.languages.registerDocumentHighlightProvider(languageNames.html, new JavascriptInHtmlOccurrencesAdapter())
     monaco.languages.registerDocumentFormattingEditProvider(languageNames.html, new JavascriptInHtmlFormattingAdapter())
     monaco.languages.registerDocumentRangeFormattingEditProvider(languageNames.html, new JavascriptInHtmlRangeFormattingAdapter());
