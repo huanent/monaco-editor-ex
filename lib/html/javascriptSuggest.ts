@@ -14,10 +14,10 @@ interface JavascriptCompletionItem extends languages.CompletionItem {
     offset: number;
 }
 
-class JavascriptInHtmlSuggestAdapter implements languages.CompletionItemProvider {
+class JavascriptSuggestAdapter implements languages.CompletionItemProvider {
     triggerCharacters = ["."];
     async provideCompletionItems(model: editor.ITextModel, position: Position, _context: languages.CompletionContext, _token: CancellationToken): Promise<languages.CompletionList | undefined> {
-        const regions = htmlRegionCache.getCache(model);
+        const regions = htmlRegionCache.get(model);
         if (regions.getLanguageAtPosition(position) != languageNames.javascript) return;
         const wordRange = getWordRange(model, position);
         const worker = await getJavascriptWorker(model.uri)
@@ -51,7 +51,7 @@ class JavascriptInHtmlSuggestAdapter implements languages.CompletionItemProvider
                 label: entry.name,
                 insertText: entry.name,
                 sortText: entry.sortText,
-                kind: JavascriptInHtmlSuggestAdapter.convertKind(entry.kind),
+                kind: JavascriptSuggestAdapter.convertKind(entry.kind),
                 tags
             };
         });
@@ -83,10 +83,10 @@ class JavascriptInHtmlSuggestAdapter implements languages.CompletionItemProvider
             uri: resource,
             position: position,
             label: details.name,
-            kind: JavascriptInHtmlSuggestAdapter.convertKind(details.kind),
+            kind: JavascriptSuggestAdapter.convertKind(details.kind),
             detail: displayPartsToString(details.displayParts),
             documentation: {
-                value: JavascriptInHtmlSuggestAdapter.createDocumentationString(details)
+                value: JavascriptSuggestAdapter.createDocumentationString(details)
             }
         }
     }
@@ -136,5 +136,5 @@ class JavascriptInHtmlSuggestAdapter implements languages.CompletionItemProvider
 }
 
 export function useJavascriptSuggestInHtml() {
-    monaco.languages.registerCompletionItemProvider(languageNames.html, new JavascriptInHtmlSuggestAdapter())
+    monaco.languages.registerCompletionItemProvider(languageNames.html, new JavascriptSuggestAdapter())
 }

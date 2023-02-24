@@ -14,17 +14,17 @@ export class Cache<T> {
         if (!record) {
             record = {
                 version: version,
-                value: this.getCache(model)
+                value: this._getCache(model)
             }
             this.map[uri] = record;
         } else if (version != record.version) {
-            record.value = this.getCache(model);
+            record.value = this._getCache(model);
         }
 
         return record.value;
     }
 
-    getCache(_model: editor.ITextModel): T {
+    _getCache(_model: editor.ITextModel): T {
         throw new Error('You have to implement the method getCache!');
     }
 

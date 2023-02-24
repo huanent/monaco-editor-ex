@@ -1,42 +1,75 @@
-import { monaco } from "../monaco";
+import { languageNames } from "../constants"
+import type { IDisposable, Uri, editor } from "../monaco"
+import { monaco } from "../monaco"
+import { htmlRegionCache } from "./htmlRegionCache"
+
 export * from "./autoCloseTag"
 export * from "./javascriptSuggest"
 export * from "./javascriptSignatureHelp"
 export * from "./javascriptQuickInfo"
-
-import {
-    JavascriptInHtmlOccurrencesAdapter,
-    JavascriptInHtmlFormattingAdapter,
-    JavascriptInHtmlRangeFormattingAdapter
-} from "./javascriptMode";
-
-import {
-    CssInHtmlDocumentHighlightAdapter,
-    CssInHtmlHoverAdapter,
-    CssInHtmlSuggestAdapter,
-    CssInHtmlDocumentColorAdapter,
-    CssInHtmlDefinitionAdapter,
-    CssInHtmlReferenceAdapter,
-    CssInHtmlDocumentSymbolAdapter,
-    CssInHtmlRenameAdapter,
-    CssInHtmlFoldingRangeAdapter
-} from "./cssMode";
-import { languageNames } from "../constants";
+export * from "./javascriptOccurrences"
+export * from "./cssSuggest"
+export * from "./cssHover"
+export * from "./cssFoldingRange"
+export * from "./cssColor"
+export * from "./cssRename"
+export * from "./cssSymbol"
+export * from "./cssReference"
+export * from "./cssDefinition"
+export * from "./cssHighlight"
 
 
-export function setupHtml() {
-   
-    monaco.languages.registerDocumentHighlightProvider(languageNames.html, new JavascriptInHtmlOccurrencesAdapter())
-    monaco.languages.registerDocumentFormattingEditProvider(languageNames.html, new JavascriptInHtmlFormattingAdapter())
-    monaco.languages.registerDocumentRangeFormattingEditProvider(languageNames.html, new JavascriptInHtmlRangeFormattingAdapter());
+export class javascriptInHtmlAdapter {
+    protected readonly _disposables: IDisposable[] = [];
 
-    monaco.languages.registerCompletionItemProvider(languageNames.html, new CssInHtmlSuggestAdapter())
-    monaco.languages.registerHoverProvider(languageNames.html, new CssInHtmlHoverAdapter())
-    monaco.languages.registerDocumentHighlightProvider(languageNames.html, new CssInHtmlDocumentHighlightAdapter())
-    monaco.languages.registerColorProvider(languageNames.html, new CssInHtmlDocumentColorAdapter())
-    monaco.languages.registerDefinitionProvider(languageNames.html, new CssInHtmlDefinitionAdapter())
-    monaco.languages.registerReferenceProvider(languageNames.html, new CssInHtmlReferenceAdapter())
-    monaco.languages.registerDocumentSymbolProvider(languageNames.html, new CssInHtmlDocumentSymbolAdapter())
-    monaco.languages.registerRenameProvider(languageNames.html, new CssInHtmlRenameAdapter())
-    monaco.languages.registerFoldingRangeProvider(languageNames.html, new CssInHtmlFoldingRangeAdapter())
+    constructor() {
+        this._disposables.push(monaco.editor.onDidCreateModel((m) => this.didCreateModel(m)))
+        this._disposables.push(monaco.editor.onWillDisposeModel((m) => this.willDisposeModel(m)))
+        this._disposables.push(monaco.editor.onDidChangeModelLanguage(e => this.didChangeModelLanguage(e)))
+    }
+
+    didCreateModel(model: editor.IModel) {
+        if (model.getLanguageId() != languageNames.html) return;
+        this.createEmbeddedModel(model)
+    }
+
+    willDisposeModel(model: editor.IModel) {
+        if (model.getLanguageId() != languageNames.html) return;
+        this.tryRemoveEmbeddedModel(model.uri);
+    }
+
+    didChangeModelLanguage(e: { model: editor.IModel, oldLanguage: string }) {
+        if (e.oldLanguage == languageNames.html) {
+            this.tryRemoveEmbeddedModel(e.model.uri)
+        }
+
+        if (e.model.getLanguageId() == languageNames.html) {
+            this.createEmbeddedModel(e.model)
+        }
+    }
+
+    private tryRemoveEmbeddedModel(uri: Uri) {
+        const path = monaco.Uri.joinPath(uri, languageNames.javascript);
+        const embeddedModel = monaco.editor.getModel(path)
+        embeddedModel?.dispose();
+    }
+
+    private createEmbeddedModel(model: editor.IModel) {
+        const content = htmlRegionCache.get(model).getEmbeddedDocument(languageNames.javascript, true)
+        const uri = monaco.Uri.joinPath(model.uri, languageNames.javascript);
+        monaco.editor.createModel(content.getText(), languageNames.javascript, uri)
+
+        model.onDidChangeContent(() => {
+            if (model.getLanguageId() == languageNames.html) {
+                const content = htmlRegionCache.get(model).getEmbeddedDocument(languageNames.javascript, true)
+                const embeddedModel = monaco.editor.getModel(uri);
+                embeddedModel?.setValue(content.getText()) //TODO 优化
+            }
+        })
+    }
+
+    dispose(): void {
+        this._disposables.forEach((d) => d && d.dispose());
+        this._disposables.length = 0;
+    }
 }

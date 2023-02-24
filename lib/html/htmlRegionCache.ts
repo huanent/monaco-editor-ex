@@ -4,7 +4,7 @@ import { Cache } from "../cache";
 import { htmlService, modelToDocument } from "./utils";
 
 export class HtmlRegionCache extends Cache<HTMLDocumentRegions>{
-    getCache(model: editor.ITextModel) {
+    _getCache(model: editor.ITextModel) {
         return getDocumentRegions(htmlService, modelToDocument(model));
     }
 }

@@ -5,7 +5,7 @@ import { monaco } from "../monaco"
 import { htmlRegionCache } from "./htmlRegionCache";
 import { getEmbeddedJavascriptUri } from "./utils";
 
-class JavascriptInHtmlSignatureHelpAdapter implements languages.SignatureHelpProvider {
+class JavascriptSignatureHelpAdapter implements languages.SignatureHelpProvider {
     signatureHelpTriggerCharacters = ['(', ',']
 
     private static _toSignatureHelpTriggerReason(
@@ -38,7 +38,7 @@ class JavascriptInHtmlSignatureHelpAdapter implements languages.SignatureHelpPro
         _token: CancellationToken,
         context: languages.SignatureHelpContext
     ): Promise<languages.SignatureHelpResult | undefined> {
-        const regions = htmlRegionCache.getCache(model);
+        const regions = htmlRegionCache.get(model);
         if (regions.getLanguageAtPosition(position) != languageNames.javascript) return;
         const workerGetter = await monaco.languages.typescript.getJavaScriptWorker()
         const worker = await workerGetter(getEmbeddedJavascriptUri(model))
@@ -51,7 +51,7 @@ class JavascriptInHtmlSignatureHelpAdapter implements languages.SignatureHelpPro
         }
 
         const info = await worker.getSignatureHelpItems(javascriptModel.uri.toString(), offset, {
-            triggerReason: JavascriptInHtmlSignatureHelpAdapter._toSignatureHelpTriggerReason(context)
+            triggerReason: JavascriptSignatureHelpAdapter._toSignatureHelpTriggerReason(context)
         });
 
         if (!info || model.isDisposed()) {
@@ -101,5 +101,5 @@ class JavascriptInHtmlSignatureHelpAdapter implements languages.SignatureHelpPro
 }
 
 export function useJavascriptSignatureHelpInHtml() {
-    monaco.languages.registerSignatureHelpProvider(languageNames.html, new JavascriptInHtmlSignatureHelpAdapter())
+    monaco.languages.registerSignatureHelpProvider(languageNames.html, new JavascriptSignatureHelpAdapter())
 }

@@ -5,13 +5,13 @@ import { monaco } from "../monaco"
 import { htmlRegionCache } from "./htmlRegionCache";
 import { getEmbeddedJavascriptUri, tagToString, textSpanToRange } from "./utils";
 
-class JavascriptInHtmlQuickInfoAdapter implements languages.HoverProvider {
+class JavascriptQuickInfoAdapter implements languages.HoverProvider {
     public async provideHover(
         model: editor.ITextModel,
         position: Position,
         _token: CancellationToken
     ): Promise<languages.Hover | undefined> {
-        const regions = htmlRegionCache.getCache(model);
+        const regions = htmlRegionCache.get(model);
         if (regions.getLanguageAtPosition(position) != languageNames.javascript) return;
         const workerGetter = await monaco.languages.typescript.getJavaScriptWorker()
         const worker = await workerGetter(getEmbeddedJavascriptUri(model))
@@ -47,5 +47,5 @@ class JavascriptInHtmlQuickInfoAdapter implements languages.HoverProvider {
 }
 
 export function useJavascriptQuickInfoInHtml() {
-    monaco.languages.registerHoverProvider(languageNames.html, new JavascriptInHtmlQuickInfoAdapter())
+    monaco.languages.registerHoverProvider(languageNames.html, new JavascriptQuickInfoAdapter())
 }
