@@ -1,10 +1,11 @@
 import { editor } from "monaco-editor";
 import { HTMLDocumentRegions, getDocumentRegions } from "./embeddedSupport";
 import { Cache } from "../cache";
-import { htmlService, modelToDocument } from "./utils";
+import { getHtmlService, modelToDocument } from "./utils";
 
 export class HtmlRegionCache extends Cache<HTMLDocumentRegions>{
     _getCache(model: editor.ITextModel) {
+        const htmlService = getHtmlService();
         return getDocumentRegions(htmlService, modelToDocument(model));
     }
 }

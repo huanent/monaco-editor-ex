@@ -1,7 +1,7 @@
 import { monaco } from "../monaco";
 import type { editor } from "../monaco";
 import { languageNames } from "../constants";
-import { htmlService, modelToDocument, toLsPosition } from "./utils";
+import { getHtmlService, modelToDocument, toLsPosition } from "./utils";
 
 export function useAutoCloseTag() {
     monaco.editor.onDidCreateEditor((ed: editor.ICodeEditor) => {
@@ -14,6 +14,7 @@ export function useAutoCloseTag() {
             if (change.text == ">") {
                 var document = modelToDocument(model);
                 const position = new monaco.Position(change.range.endLineNumber, change.range.endColumn + 1);
+                const htmlService = getHtmlService();
                 var close = htmlService.doTagComplete(document, toLsPosition(position), htmlService.parseHTMLDocument(document))
                 if (!close?.startsWith("$0")) return;
 

@@ -1,17 +1,43 @@
-import { getLanguageService, Position as HtmlPosition, TextDocument } from "vscode-html-languageservice";
-import { editor, Position,monaco, IRange } from "../monaco";
-import { getCSSLanguageService } from "vscode-css-languageservice"
+import { getLanguageService, Position as HtmlPosition, TextDocument, Range as HtmlRange, TextEdit } from "vscode-html-languageservice";
+import type { editor, Position, IRange, languages } from "../monaco";
+import { monaco } from "../monaco";
 import type ts from "typescript";
 import { languageNames } from "../constants";
 
-export const htmlService = getLanguageService();
-export const cssService = getCSSLanguageService();
+export function getHtmlService() {
+    return getLanguageService();
+}
 
 export function toLsPosition(position: Position): HtmlPosition {
     return {
         character: position.column - 1,
         line: position.lineNumber - 1
     }
+}
+
+export function toLsRange(range: IRange): HtmlRange {
+    return HtmlRange.create(
+        range.startLineNumber - 1,
+        range.startColumn - 1,
+        range.endLineNumber - 1,
+        range.endColumn - 1
+    )
+}
+
+export function toRange(range: HtmlRange): IRange {
+    return {
+        startLineNumber: range.start.line + 1,
+        startColumn: range.start.character + 1,
+        endLineNumber: range.end.line + 1,
+        endColumn: range.end.character + 1,
+    }
+}
+
+export function toTextEdit(textEdit: TextEdit): languages.TextEdit  {
+    return {
+        range: toRange(textEdit.range),
+        text: textEdit.newText
+    };
 }
 
 export function modelToDocument(model: editor.IModel) {

@@ -41,11 +41,13 @@
     "publish": "npm run build && npm --registry https://registry.npmjs.org --access public publish"
   },
   "devDependencies": {
+    "@types/js-beautify": "^1.13.3",
     "happy-dom": "^8.2.3",
-    "monaco-editor": "^0.34.1",
-    "typescript": "^5.0.0-beta",
+    "js-beautify": "^1.14.7",
+    "monaco-editor": "^0.36.1",
+    "typescript": "^5.0.2",
     "vite": "^4.0.0",
-    "vite-plugin-dts": "^1.7.1",
+    "vite-plugin-dts": "^2.1.0",
     "vitest": "^0.28.3",
     "vscode-css-languageservice": "^6.2.2",
     "vscode-html-languageservice": "^5.0.4"

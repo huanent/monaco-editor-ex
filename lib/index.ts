@@ -12,7 +12,8 @@ import {
   useCssReferenceInHtml,
   useCssDefinitionInHtml,
   useCssHighlightInHtml,
-  javascriptInHtmlAdapter
+  javascriptInHtmlAdapter,
+  useHtmlFormatting
 } from "./html";
 import { tryInitMonaco } from "./monaco";
 
@@ -30,9 +31,6 @@ export function initMonaco(monaco: typeof Monaco) {
   useCssReferenceInHtml();
   useCssDefinitionInHtml();
   useCssHighlightInHtml();
+  useHtmlFormatting();
   new javascriptInHtmlAdapter();
 }
-
-
-
-

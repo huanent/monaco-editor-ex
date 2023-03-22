@@ -17,6 +17,7 @@ export * from "./cssSymbol"
 export * from "./cssReference"
 export * from "./cssDefinition"
 export * from "./cssHighlight"
+export * from "./formatting"
 
 
 export class javascriptInHtmlAdapter {
