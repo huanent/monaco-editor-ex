@@ -1,9 +1,10 @@
-import { displayPartsToString, SignatureHelpTriggerReason } from "typescript";
+import type { SignatureHelpTriggerReason } from "typescript";
 import { languageNames } from "../constants";
 import type { languages, editor, Position, CancellationToken } from "../monaco";
 import { monaco } from "../monaco"
 import { htmlRegionCache } from "./htmlRegionCache";
 import { getEmbeddedJavascriptUri } from "./utils";
+import { displayPartsToString } from "../javascript/utils";
 
 class JavascriptSignatureHelpAdapter implements languages.SignatureHelpProvider {
     signatureHelpTriggerCharacters = ['(', ',']

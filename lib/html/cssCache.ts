@@ -1,4 +1,4 @@
-import { editor } from "monaco-editor";
+import { editor } from "../monaco";
 import { Cache } from "../cache";
 import { Stylesheet } from "vscode-css-languageservice";
 import { htmlRegionCache } from "./htmlRegionCache";

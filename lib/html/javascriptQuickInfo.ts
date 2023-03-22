@@ -1,4 +1,4 @@
-import { displayPartsToString } from "typescript";
+import { displayPartsToString } from "../javascript/utils";
 import { languageNames } from "../constants";
 import type { languages, editor, Position, CancellationToken } from "../monaco";
 import { monaco } from "../monaco"

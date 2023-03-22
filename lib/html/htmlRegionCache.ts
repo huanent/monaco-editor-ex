@@ -1,4 +1,4 @@
-import { editor } from "monaco-editor";
+import { editor } from "../monaco";
 import { HTMLDocumentRegions, getDocumentRegions } from "./embeddedSupport";
 import { Cache } from "../cache";
 import { getHtmlService, modelToDocument } from "./utils";
