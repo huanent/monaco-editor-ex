@@ -15,5 +15,6 @@ export * from "./cssHighlight"
 export * from "./formatting"
 export * from "./unocss"
 export * from "./javascriptInHtml"
+export * from "./moduleSuggestInHtml"
 
 

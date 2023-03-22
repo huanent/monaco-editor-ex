@@ -1,12 +1,14 @@
 import './userWorker'
 import * as monaco from "monaco-editor"
-import { useMonacoEx, useUnocss, useModuleResolve } from "../lib";
+import { useMonacoEx, useUnocss, useModuleResolve, useModuleSuggest } from "../lib";
 
 useMonacoEx(monaco)
 useUnocss()
 useModuleResolve(sources => {
   console.log(sources)
 });
+
+useModuleSuggest(['./user', "./abc"])
 
 monaco.editor.createModel(`
 export const customObject={
