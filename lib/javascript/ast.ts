@@ -11,12 +11,17 @@ export interface AstNode {
   start: number;
   end: number;
 }
+export interface Source {
+  value: string;
+  end: number;
+  start: number;
+}
 
 export interface StringLiteral extends AstNode {
   value: string;
 }
 
-export function getModulesFromAst(ast: AstTree) {
+export function getModulesFromAst(ast: AstTree):Source[] {
   const importDeclarations = getAstNode(ast, [
     "ImportDeclaration",
   ]) as unknown as ImportDeclaration[];

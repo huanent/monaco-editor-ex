@@ -4,7 +4,9 @@ import { useMonacoEx, useUnocss, useModuleResolve } from "../lib";
 
 useMonacoEx(monaco)
 useUnocss()
-useModuleResolve();
+useModuleResolve(sources => {
+  console.log(sources)
+});
 
 monaco.editor.createModel(`
 export const customObject={
