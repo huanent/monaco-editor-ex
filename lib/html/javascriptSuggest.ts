@@ -6,6 +6,7 @@ import { monaco } from "../monaco";
 import { getWordRange } from "../utils";
 import { htmlRegionCache } from "./htmlRegionCache";
 import { getEmbeddedJavascriptUri, tagToString, Kind } from "./utils";
+import { snippetSuggestions } from "../javascript";
 
 interface JavascriptCompletionItem extends languages.CompletionItem {
     label: string;
@@ -57,7 +58,7 @@ class JavascriptSuggestAdapter implements languages.CompletionItemProvider {
         });
 
         return {
-            suggestions,
+            suggestions: [...snippetSuggestions().suggestions, ...suggestions],
         };
     }
 

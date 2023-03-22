@@ -17,6 +17,7 @@ import {
   useUnocss
 } from "./html";
 import { tryInitMonaco } from "./monaco";
+import { useJavascriptSnippet } from "./javascript";
 
 export function initMonaco(monaco: typeof Monaco) {
   if (!tryInitMonaco(monaco)) return
@@ -34,5 +35,6 @@ export function initMonaco(monaco: typeof Monaco) {
   useCssHighlightInHtml();
   useHtmlFormatting();
   useUnocss();
+  useJavascriptSnippet();
   new javascriptInHtmlAdapter();
 }

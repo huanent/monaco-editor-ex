@@ -3,6 +3,11 @@ import * as monaco from "monaco-editor"
 import { initMonaco } from "../lib";
 
 initMonaco(monaco)
+monaco.languages.typescript.javascriptDefaults.addExtraLib(`
+  const customObject={
+    name:""
+  }
+`, "define.d.ts")
 
 const model = monaco.editor.createModel(`
 <style>
