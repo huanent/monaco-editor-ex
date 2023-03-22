@@ -41,6 +41,7 @@
     "publish": "npm run build && npm --registry https://registry.npmjs.org --access public publish"
   },
   "devDependencies": {
+    "@babel/parser": "^7.21.3",
     "@types/js-beautify": "^1.13.3",
     "@types/tinycolor2": "^1.4.3",
     "@unocss/autocomplete": "^0.50.6",

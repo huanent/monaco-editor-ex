@@ -1,8 +1,7 @@
 import { getLanguageService, Position as HtmlPosition, TextDocument, Range as HtmlRange, TextEdit } from "vscode-html-languageservice";
-import type { editor, Position, IRange, languages } from "../monaco";
+import type { editor, Position, IRange, languages, Uri } from "../monaco";
 import { monaco } from "../monaco";
 import type ts from "typescript";
-import { languageNames } from "../constants";
 
 export function getHtmlService() {
     return getLanguageService();
@@ -33,7 +32,7 @@ export function toRange(range: HtmlRange): IRange {
     }
 }
 
-export function toTextEdit(textEdit: TextEdit): languages.TextEdit  {
+export function toTextEdit(textEdit: TextEdit): languages.TextEdit {
     return {
         range: toRange(textEdit.range),
         text: textEdit.newText
@@ -49,12 +48,11 @@ export function modelToDocument(model: editor.IModel) {
     );
 }
 
-function getEmbeddedUri(model: editor.IModel, languageId: string) {
-    return monaco.Uri.joinPath(model.uri, languageId)
-}
-
-export function getEmbeddedJavascriptUri(model: editor.IModel) {
-    return getEmbeddedUri(model, languageNames.javascript)
+export function getEmbeddedJavascriptUri(value: editor.IModel | Uri) {
+    if ("uri" in value) {
+        value = value.uri;
+    }
+    return monaco.Uri.parse(value.toString() + ".ts")
 }
 
 export function textSpanToRange(model: editor.ITextModel, span: ts.TextSpan): IRange {

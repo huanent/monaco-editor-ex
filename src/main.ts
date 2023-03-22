@@ -1,13 +1,16 @@
 import './userWorker'
 import * as monaco from "monaco-editor"
-import { initMonaco } from "../lib";
+import { useMonacoEx, useUnocss, useModuleResolve } from "../lib";
 
-initMonaco(monaco)
-monaco.languages.typescript.javascriptDefaults.addExtraLib(`
-  const customObject={
-    name:""
-  }
-`, "define.d.ts")
+useMonacoEx(monaco)
+useUnocss()
+useModuleResolve();
+
+monaco.editor.createModel(`
+export const customObject={
+  name:""
+}
+`, "javascript", monaco.Uri.file("myModule.js"))
 
 const model = monaco.editor.createModel(`
 <style>
@@ -19,6 +22,7 @@ const model = monaco.editor.createModel(`
   
 </div>
 <script>
+  import {} from "./myModule"
   function foo(){
            return "bar";
 

@@ -12,14 +12,15 @@ import {
   useCssReferenceInHtml,
   useCssDefinitionInHtml,
   useCssHighlightInHtml,
-  javascriptInHtmlAdapter,
+  useJavascriptInHtml,
   useHtmlFormatting,
-  useUnocss
 } from "./html";
 import { tryInitMonaco } from "./monaco";
 import { useJavascriptSnippet } from "./javascript";
+export { useUnocss } from "./html"
+export { useModuleResolve } from "./javascript/moduleResolve"
 
-export function initMonaco(monaco: typeof Monaco) {
+export function useMonacoEx(monaco: typeof Monaco) {
   if (!tryInitMonaco(monaco)) return
   useAutoCloseTag()
   useJavascriptSuggestInHtml();
@@ -34,7 +35,6 @@ export function initMonaco(monaco: typeof Monaco) {
   useCssDefinitionInHtml();
   useCssHighlightInHtml();
   useHtmlFormatting();
-  useUnocss();
   useJavascriptSnippet();
-  new javascriptInHtmlAdapter();
+  useJavascriptInHtml();
 }

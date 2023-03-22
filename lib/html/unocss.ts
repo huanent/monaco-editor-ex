@@ -1,4 +1,4 @@
-import type { CancellationToken, Position, editor, languages } from "../monaco";
+import type { CancellationToken, IDisposable, Position, editor, languages } from "../monaco";
 import { monaco } from "../monaco";
 import { createAutocomplete } from "@unocss/autocomplete"
 import { createGenerator } from "@unocss/core"
@@ -9,11 +9,6 @@ import { getHtmlService } from "./utils";
 import { TokenType } from "vscode-html-languageservice";
 import { languageNames } from "../constants";
 
-const unocss = createGenerator({
-    presets: [presetUno()]
-})
-const unocssAutocomplete = createAutocomplete(unocss)
-
 class ClassCompletionItemAdapter
     implements languages.CompletionItemProvider {
     triggerCharacters = ['"', "'", " ", "-", ":"];
@@ -23,7 +18,7 @@ class ClassCompletionItemAdapter
         _context: languages.CompletionContext,
         _token: CancellationToken
     ): Promise<languages.CompletionList | undefined> {
-        if (!unocssAutocomplete) return;
+        if (!unocssAutocomplete || !unocss) return;
         const offset = model.getOffsetAt(position);
         const classToken = getClassToken(model, offset);
         if (!classToken) return;
@@ -202,7 +197,7 @@ function getClassToken(model: editor.ITextModel, offset: number) {
     const scanner = htmlService.createScanner(model.getValue());
 
     let isClass = false;
-    
+
     do {
         const type = scanner.scan();
         if (
@@ -329,8 +324,31 @@ function offsetToRange(model: editor.IModel, start: number, end: number) {
     );
 }
 
-export function useUnocss() {
-    monaco.languages.registerCompletionItemProvider(languageNames.html, new ClassCompletionItemAdapter())
-    monaco.languages.registerHoverProvider(languageNames.html, new ClassHoverAdapter())
-    monaco.languages.registerColorProvider(languageNames.html, new ColorPreviewAdapter())
+let unocss: ReturnType<typeof createGenerator> | undefined = undefined
+
+let unocssAutocomplete: ReturnType<typeof createAutocomplete>
+let initialized = false;
+
+let disposables: IDisposable[] = [];
+
+function dispose() {
+    initialized = false;
+    disposables.forEach((d) => d && d.dispose());
+    disposables.length = 0;
+}
+
+export function useUnocss(uno?: ReturnType<typeof createGenerator>) {
+    if (!uno) {
+        uno = unocss ?? createGenerator({
+            presets: [presetUno()]
+        })
+    }
+    unocss = uno;
+    unocssAutocomplete = createAutocomplete(unocss)
+    if (initialized) return dispose;
+    initialized = true;
+    disposables.push(monaco.languages.registerCompletionItemProvider(languageNames.html, new ClassCompletionItemAdapter()))
+    disposables.push(monaco.languages.registerHoverProvider(languageNames.html, new ClassHoverAdapter()))
+    disposables.push(monaco.languages.registerColorProvider(languageNames.html, new ColorPreviewAdapter()))
+    return dispose;
 }

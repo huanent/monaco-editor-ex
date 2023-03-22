@@ -1,5 +1,5 @@
 import jsSnippets from "./defines.json";
-import type { CancellationToken, editor, languages, Position, Range } from "../../monaco";
+import type { languages, Range } from "../../monaco";
 import { monaco } from "../../monaco";
 import { languageNames } from "../../constants";
 

@@ -10,7 +10,9 @@ export default defineConfig({
       formats: ["es", "umd", "iife"]
     },
     rollupOptions: {
-      external: ["monaco-editor","monaco-editor/esm/vs/editor/editor.api"],
+      external: [
+        "monaco-editor",
+        "monaco-editor/esm/vs/editor/editor.api"],
       output: {
         globals: {
           monaco: 'monaco',
