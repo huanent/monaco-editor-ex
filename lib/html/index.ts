@@ -18,6 +18,7 @@ export * from "./cssReference"
 export * from "./cssDefinition"
 export * from "./cssHighlight"
 export * from "./formatting"
+export * from "./unocss"
 
 
 export class javascriptInHtmlAdapter {

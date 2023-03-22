@@ -14,7 +14,7 @@ class HtmlFormattingAdapter implements languages.DocumentFormattingEditProvider 
         const formatted = html_beautify(content);
         return [{
             range: model.getFullModelRange(),
-            text:formatted
+            text: formatted
         }];
     }
 
@@ -22,6 +22,7 @@ class HtmlFormattingAdapter implements languages.DocumentFormattingEditProvider 
 
 export function useHtmlFormatting() {
     monaco.languages.html.htmlDefaults.setModeConfiguration({
+        ...monaco.languages.html.htmlDefaults.modeConfiguration,
         documentFormattingEdits: false
     })
     monaco.languages.registerDocumentFormattingEditProvider(
