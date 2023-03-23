@@ -27,8 +27,8 @@ export function trimPathPrefix(path: string) {
 }
 
 export function trimScriptPathExtension(path: string) {
-	if (path.endsWith(".js") || path.startsWith(".ts")) {
-		return path.substring(0, path.length - 3)
+	if (path.endsWith(".js") || path.endsWith(".ts")) {
+		path = path.substring(0, path.length - 3)
 	}
 
 	return path;

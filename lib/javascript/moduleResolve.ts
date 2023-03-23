@@ -65,8 +65,8 @@ async function resolveModule(name: string) {
 
 let initialized = false;
 let disposables: IDisposable[] = [];
-type ModuleReporter = (path: string) => Promise<string>;
-let moduleLoader: ModuleReporter | undefined
+type ModuleLoader = (path: string) => Promise<string>;
+let moduleLoader: ModuleLoader | undefined
 
 function dispose() {
     initialized = false;
@@ -75,7 +75,7 @@ function dispose() {
     disposables.length = 0;
 }
 
-export function useModuleResolve(onModuleLoad: ModuleReporter) {
+export function useModuleResolve(onModuleLoad: ModuleLoader) {
     moduleLoader = onModuleLoad;
     if (initialized) return dispose;
     initialized = true;
