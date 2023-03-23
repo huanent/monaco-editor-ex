@@ -33,7 +33,7 @@ const model = monaco.editor.createModel(`
 
         }
 </${'script'}>
-`, "html", monaco.Uri.file("index.html"))
+`, "html", monaco.Uri.file("main.html"))
 
 monaco.editor.create(document.querySelector("#app")!, {
   model

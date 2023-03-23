@@ -24,16 +24,11 @@ export function getModuleSuggest(model: editor.ITextModel, position: Position, s
     if (!module || !offset) return;
     const moduleNode = getModuleByOffset(module.ast, offset);
     if (!moduleNode) return;
-    const currentModelPath = trimPathPrefix(model.uri.path)
+    const currentModelPath = standardizeScriptUri(model.uri).toString()
     const prefix = moduleNode.value.substring(0, offset - moduleNode.start)
     const items = suggestions
         .map(m => trimScriptPathExtension(m))
-        .filter((f) => {
-            if (!f.startsWith(prefix)) return false;
-            f = trimPathPrefix(f)
-            if (f == currentModelPath) return false;
-            return true;
-        });
+        .filter((f) => f.startsWith(prefix) && standardizeScriptUri(f).toString() != currentModelPath);
     if (!items.length) return;
     const moduleOffset = model.getOffsetAt(position) - offset;
     return {
