@@ -337,13 +337,11 @@ function dispose() {
     disposables.length = 0;
 }
 
-export function useUnocss(uno?: ReturnType<typeof createGenerator>) {
-    if (!uno) {
-        uno = unocss ?? createGenerator({
-            presets: [presetUno()]
-        })
-    }
-    unocss = uno;
+export function useUnocss(config?: Parameters<typeof createGenerator>[0]) {
+    unocss = unocss ?? createGenerator({
+        presets: [presetUno()],
+        ...config
+    })
     unocssAutocomplete = createAutocomplete(unocss)
     if (initialized) return dispose;
     initialized = true;

@@ -1,6 +1,6 @@
 {
   "name": "monaco-editor-ex",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "type": "module",
   "author": {
     "name": "huanent",
@@ -21,7 +21,8 @@
     "monaco-editor",
     "extension",
     "js in html",
-    "auto close tag"
+    "auto close tag",
+    "unocss"
   ],
   "license": "MIT",
   "files": [
@@ -38,7 +39,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "publish": "npm run build && npm --registry https://registry.npmjs.org --access public publish"
+    "publish": "npm run build && npm publish --registry https://registry.npmjs.org --access public"
   },
   "devDependencies": {
     "@babel/parser": "^7.21.3",
