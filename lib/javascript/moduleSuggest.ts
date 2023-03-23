@@ -16,6 +16,13 @@ class ModuleSuggestAdapter
     }
 }
 
+function trimScriptExtension(path: string) {
+    if (path.endsWith('.js') || path.endsWith('.ts')) {
+        return path.substring(0, path.length - 3)
+    }
+    return path;
+}
+
 export function getModuleSuggest(model: editor.ITextModel, position: Position, suggestions: string[]) {
     let module: Module | undefined;
     let offset: number | undefined;
@@ -24,8 +31,16 @@ export function getModuleSuggest(model: editor.ITextModel, position: Position, s
     if (!module || !offset) return;
     const moduleNode = getModuleByOffset(module.ast, offset);
     if (!moduleNode) return;
+    const currentModelPath = trimCurrentPath(model.uri.path)
     const prefix = moduleNode.value.substring(0, offset - moduleNode.start)
-    const items = suggestions.filter((f) => f.startsWith(prefix));
+    const items = suggestions
+        .map(m => trimScriptExtension(m))
+        .filter((f) => {
+            if (!f.startsWith(prefix)) return false;
+            f = trimCurrentPath(f)
+            if (f == currentModelPath) return false;
+            return true;
+        });
     if (!items.length) return;
     const moduleOffset = model.getOffsetAt(position) - offset;
     return {

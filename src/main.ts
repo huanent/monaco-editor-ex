@@ -8,7 +8,7 @@ useModuleResolve(sources => {
   console.log(sources)
 });
 
-useModuleSuggest(['./user', "./abc"])
+useModuleSuggest(["./main","./user.ts","order","order.ts"])
 
 monaco.editor.createModel(`
 export const customObject={
