@@ -1,7 +1,6 @@
 import { parse } from "@babel/parser";
 import type { AstTree } from "./ast";
 import { monaco } from "../monaco";
-import { languageNames } from "../constants";
 
 const modules: Record<string, Module> = {};
 
@@ -18,7 +17,7 @@ export class Module {
   ast?: AstTree;
   loadDependenciesToken: any = null;
 
-  constructor(readonly uri: string, readonly language: string) { }
+  constructor(readonly uri: string) { }
 
   get content() {
     return this._content;
@@ -29,14 +28,8 @@ export class Module {
     this._content = value;
     this.state = ModuleState.success;
     this.ast = this.parseAst(value);
-
-    if (this.language == languageNames.javascript) {
-      monaco.languages.typescript.javascriptDefaults.addExtraLib(value, this.uri);
-    }
-
-    if (this.language == languageNames.typescript) {
-      monaco.languages.typescript.typescriptDefaults.addExtraLib(value, this.uri);
-    }
+    monaco.languages.typescript.javascriptDefaults.addExtraLib(value, this.uri);
+    monaco.languages.typescript.typescriptDefaults.addExtraLib(value, this.uri);
   }
 
   parseAst(content: string) {
@@ -60,8 +53,8 @@ export class Module {
   }
 }
 
-export function createModule(uri: string, language: string, content?: string) {
-  const module = new Module(uri, language);
+export function createModule(uri: string, content?: string) {
+  const module = new Module(uri);
   modules[uri] = module;
 
   if (content) {

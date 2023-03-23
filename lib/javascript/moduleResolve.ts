@@ -1,52 +1,82 @@
 import type { IDisposable, editor } from "../monaco"
 import { monaco } from "../monaco"
 import { isScript } from "../utils";
-import { Source, getModulesFromAst } from "./ast";
-import { createModule, getModule, removeModule } from "./moduleState";
+import { getModulesFromAst } from "./ast";
+import { Module, ModuleState, createModule, getModule, removeModule } from "./moduleState";
+import { standardizeScriptUri } from "./utils";
 
 function didCreateModel(model: editor.IModel) {
+    if (model.uri.scheme == "memory") return;
     if (!isScript(model)) return;
-    var uri = model.uri.toString()
-    var module = getModule(uri) ?? createModule(uri, model.getLanguageId(), model.getValue())
-    var sources = getModulesFromAst(module.ast);
-    if (moduleReporter) moduleReporter(sources);
+    var uri = standardizeScriptUri(model.uri).toString()
+    var module = getModule(uri) ?? createModule(uri, model.getValue())
+    resolveModules(module)
+
     model.onDidChangeContent(() => {
         module.content = model.getValue();
-        sources = getModulesFromAst(module.ast);
-        if (moduleReporter) moduleReporter(sources);
+        module.loadDependencies(resolveModules)
     })
 }
 
 function willDisposeModel(model: editor.IModel) {
     if (!isScript(model)) return;
-    removeModule(model.uri.toString())
+    removeModule(standardizeScriptUri(model.uri).toString())
 }
 
 function didChangeModelLanguage(e: { model: editor.IModel, oldLanguage: string }) {
     if (isScript(e.oldLanguage)) {
-        removeModule(e.model.uri.toString())
+        removeModule(standardizeScriptUri(e.model.uri).toString())
     }
 
     if (isScript(e.model)) {
-        var uri = e.model.uri.toString()
-        getModule(uri) ?? createModule(uri, e.model.getLanguageId(), e.model.getValue())
+        var uri = standardizeScriptUri(e.model.uri).toString()
+        getModule(uri) ?? createModule(uri, e.model.getValue())
+    }
+}
+
+export function resolveModules(module: Module) {
+    if (!module.ast) return;
+    const moduleNames = getModulesFromAst(module.ast).map((m) => m.value);
+    Promise.all(moduleNames.map(resolveModule));
+}
+
+async function resolveModule(name: string) {
+    const uri = standardizeScriptUri(name).toString();
+    const module = getModule(uri) ?? createModule(uri);
+
+    if (
+        module.state == ModuleState.loading ||
+        module.state == ModuleState.error ||
+        module.state == ModuleState.success
+    ) {
+        return;
+    }
+
+    module.state = ModuleState.loading;
+
+    try {
+        const code = await moduleLoader!(uri);
+        module.content = code;
+        resolveModules(module);
+    } catch (error) {
+        module.state = ModuleState.error;
     }
 }
 
 let initialized = false;
 let disposables: IDisposable[] = [];
-type ModuleReporter = (source: Source[]) => void;
-let moduleReporter: ModuleReporter | undefined
+type ModuleReporter = (path: string) => Promise<string>;
+let moduleLoader: ModuleReporter | undefined
 
 function dispose() {
     initialized = false;
-    moduleReporter = undefined;
+    moduleLoader = undefined;
     disposables.forEach((d) => d && d.dispose());
     disposables.length = 0;
 }
 
-export function useModuleResolve(onModuleFind?: ModuleReporter) {
-    moduleReporter = onModuleFind;
+export function useModuleResolve(onModuleLoad: ModuleReporter) {
+    moduleLoader = onModuleLoad;
     if (initialized) return dispose;
     initialized = true;
     disposables.push(monaco.editor.onDidCreateModel((m) => didCreateModel(m)))

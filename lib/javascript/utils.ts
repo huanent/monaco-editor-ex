@@ -14,12 +14,33 @@ export function displayPartsToString(displayParts: SymbolDisplayPart[] | undefin
 	return '';
 }
 
-export function trimCurrentPath(path: string) {
+export function trimPathPrefix(path: string) {
 	if (path.startsWith("./") || path.startsWith(".\\")) {
-		path = trimCurrentPath(path.substring(2));
+		path = trimPathPrefix(path.substring(2));
+	}
+
+	if (path.startsWith("/") || path.startsWith("\\")) {
+		path = trimPathPrefix(path.substring(1));
 	}
 
 	return path;
+}
+
+export function trimScriptPathExtension(path: string) {
+	if (path.endsWith(".js") || path.startsWith(".ts")) {
+		return path.substring(0, path.length - 3)
+	}
+
+	return path;
+}
+
+export function standardizeScriptUri(value: string | Uri) {
+	if (typeof value != "string") {
+		value = value.path;
+	}
+	value = trimPathPrefix(value);
+	value = trimScriptPathExtension(value);
+	return monaco.Uri.file(value + '.ts')
 }
 
 export function isRelativePath(path: string) {

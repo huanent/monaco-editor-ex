@@ -4,11 +4,12 @@ import { useMonacoEx, useUnocss, useModuleResolve, useModuleSuggest } from "../l
 
 useMonacoEx(monaco)
 useUnocss()
-useModuleResolve(sources => {
-  console.log(sources)
+useModuleResolve(path => {
+  console.log(path)
+  return Promise.resolve("export interface abc{ name:string}")
 });
 
-useModuleSuggest(["./main","./user.ts","order","order.ts"])
+useModuleSuggest(["./main", "./user.ts", "order", "order.ts"])
 
 monaco.editor.createModel(`
 export const customObject={

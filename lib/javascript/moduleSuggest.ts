@@ -3,7 +3,7 @@ import { IDisposable, Position, editor, languages } from "../monaco";
 import { monaco } from "../monaco";
 import { getModuleByOffset } from "./ast";
 import { Module, getModule } from "./moduleState";
-import { trimCurrentPath } from "./utils";
+import { standardizeScriptUri, trimPathPrefix, trimScriptPathExtension } from "./utils";
 
 class ModuleSuggestAdapter
     implements languages.CompletionItemProvider {
@@ -16,28 +16,21 @@ class ModuleSuggestAdapter
     }
 }
 
-function trimScriptExtension(path: string) {
-    if (path.endsWith('.js') || path.endsWith('.ts')) {
-        return path.substring(0, path.length - 3)
-    }
-    return path;
-}
-
 export function getModuleSuggest(model: editor.ITextModel, position: Position, suggestions: string[]) {
     let module: Module | undefined;
     let offset: number | undefined;
-    module = getModule(model.uri.toString());
+    module = getModule(standardizeScriptUri(model.uri).toString());
     offset = model.getOffsetAt(position);
     if (!module || !offset) return;
     const moduleNode = getModuleByOffset(module.ast, offset);
     if (!moduleNode) return;
-    const currentModelPath = trimCurrentPath(model.uri.path)
+    const currentModelPath = trimPathPrefix(model.uri.path)
     const prefix = moduleNode.value.substring(0, offset - moduleNode.start)
     const items = suggestions
-        .map(m => trimScriptExtension(m))
+        .map(m => trimScriptPathExtension(m))
         .filter((f) => {
             if (!f.startsWith(prefix)) return false;
-            f = trimCurrentPath(f)
+            f = trimPathPrefix(f)
             if (f == currentModelPath) return false;
             return true;
         });
@@ -47,7 +40,7 @@ export function getModuleSuggest(model: editor.ITextModel, position: Position, s
         suggestions: items.map((m) => ({
             insertText: m.substring(offset! - moduleNode.start - 1),
             kind: monaco.languages.CompletionItemKind.File,
-            label: trimCurrentPath(m),
+            label: trimPathPrefix(m),
             range: monaco.Range.fromPositions(
                 position,
                 model.getPositionAt(moduleNode.end - 1 + moduleOffset)
