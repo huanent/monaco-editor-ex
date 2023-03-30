@@ -24,6 +24,11 @@ export class Cache<T> {
         return record.value;
     }
 
+    remove(model: editor.ITextModel) {
+        const uri = model.uri.toString()
+        delete this.map[uri];
+    }
+
     _getCache(_model: editor.ITextModel): T {
         throw new Error('You have to implement the method getCache!');
     }

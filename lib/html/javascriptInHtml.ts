@@ -12,6 +12,7 @@ function didCreateModel(model: editor.IModel) {
 function willDisposeModel(model: editor.IModel) {
     if (model.getLanguageId() != languageNames.html) return;
     tryRemoveEmbeddedModel(model.uri);
+    htmlRegionCache.remove(model);
 }
 
 function didChangeModelLanguage(e: { model: editor.IModel, oldLanguage: string }) {

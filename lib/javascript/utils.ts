@@ -1,5 +1,5 @@
 import { monaco } from "../monaco"
-import type { Uri } from "../monaco"
+import type { Uri, languages, editor } from "../monaco"
 import type { SymbolDisplayPart } from "typescript";
 
 export async function getJavascriptWorker(uri: Uri) {
@@ -52,3 +52,15 @@ export function isRelativePath(path: string) {
 	);
 }
 
+interface TextEdit {
+	newText: string, span: { start: number, length: number }
+}
+
+export function toTextEdit(model: editor.IModel, textEdit: TextEdit): languages.TextEdit{
+	const start = model.getPositionAt(textEdit.span.start);
+	const end = model.getPositionAt(textEdit.span.start + textEdit.span.length);
+	return {
+		range: monaco.Range.fromPositions(start, end),
+		text: textEdit.newText
+	};
+}
