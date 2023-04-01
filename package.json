@@ -37,7 +37,7 @@
     "require": "./dist/monaco-editor-ex.umd.cjs"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "tsc && vite build",
     "publish": "tsc && vite build && npm publish --registry https://registry.npmjs.org --access public"
   },
