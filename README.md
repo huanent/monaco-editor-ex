@@ -6,29 +6,22 @@
 
 Many features that are only available in vscode are brought to monaco-editor,try it now! [online demo](https://huanent.github.io/monaco-editor-ex/)
 
-![](https://huanent.github.io/monaco-editor-ex/img/js-completion-in-html.png)
-
 ## available features
 
 ### html
 
 - javascript and style tag code completion
+  ![](https://huanent.github.io/monaco-editor-ex/img/js-completion-in-html.png)
 - style color preview and edit
 - auto close tag
+- Better format
 - unocss support
   ![](https://huanent.github.io/monaco-editor-ex/img/unocss.png)
 
-### javascript
-
-TODO
-
-### css
-
-TODO
 
 ## Usage
 
-### html
+### Html
 
 ```html
 <div
@@ -44,7 +37,6 @@ TODO
   });
   require(["vs/editor/editor.main"], function () {
     MonacoEditorEx.useMonacoEx(monaco);
-    MonacoEditorEx.useUnocss();
     var editor = monaco.editor.create(document.getElementById("container"), {
       value: `<div><div>`,
       language: "html",
@@ -53,15 +45,19 @@ TODO
 </script>
 ```
 
-### vite
+### Vite
+
+```
+npm i monaco-editor
+npm i monaco-editor-ex
+```
 
 Add "[userWorker.ts](https://github.com/huanent/monaco-editor-ex/blob/main/src/userWorker.ts)" file to project
 
 ```js
 import "./userWorker";
 import * as monaco from "monaco-editor";
-import { useMonacoEx, useUnocss } from "monaco-editor-ex";
+import { useMonacoEx } from "monaco-editor-ex";
 
 useMonacoEx(monaco);
-useUnocss();
 ```
