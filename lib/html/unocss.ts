@@ -3,11 +3,11 @@ import { monaco } from "../monaco";
 import { createAutocomplete } from "@unocss/autocomplete"
 import { createGenerator } from "@unocss/core"
 import { presetUno } from "@unocss/preset-uno"
-import { css_beautify } from "js-beautify";
 import tinycolor from "tinycolor2";
-import { getHtmlService } from "./utils";
+import { getHtmlService, modelToDocument, toLsRange, toTextEdit } from "./utils";
 import { TokenType } from "vscode-html-languageservice";
 import { languageNames } from "../constants";
+import { getCssService } from "../css/utils";
 
 class ClassCompletionItemAdapter
     implements languages.CompletionItemProvider {
@@ -67,10 +67,13 @@ class ClassCompletionItemAdapter
     async resolveCompletionItem?(
         item: languages.CompletionItem,
         _token: CancellationToken
-    ): Promise<languages.CompletionItem> {
-        const doc = item.documentation;
+    ): Promise<languages.CompletionItem | undefined> {
+        let doc = item.documentation;
+        if (!doc || typeof doc !== "string") {
+            return item;
+        }
         item.documentation = {
-            value: "```css\n" + css_beautify(doc as string) + "\n```",
+            value: "```css\n" + formatCss(doc) + "\n```",
         };
         return item;
     }
@@ -95,7 +98,7 @@ class ClassHoverAdapter implements languages.HoverProvider {
         return {
             contents: [
                 {
-                    value: "```css\n" + css_beautify(result.css) + "\n```",
+                    value: "```css\n" + formatCss(result.css) + "\n```",
                 },
             ],
             range: offsetToRange(
@@ -349,4 +352,18 @@ export function useUnocss(config?: Parameters<typeof createGenerator>[0]) {
     disposables.push(monaco.languages.registerHoverProvider(languageNames.html, new ClassHoverAdapter()))
     disposables.push(monaco.languages.registerColorProvider(languageNames.html, new ColorPreviewAdapter()))
     return dispose;
+}
+
+function formatCss(content: string) {
+
+    let model = monaco.editor.createModel(content, languageNames.css, monaco.Uri.from({
+        scheme: "memory",
+        path: new Date().getTime() + ".tmp"
+    }));
+    const cssService = getCssService();
+    const edits = cssService.format(modelToDocument(model), toLsRange(model.getFullModelRange()), {})
+    model.applyEdits(edits.map(m => toTextEdit(m)));
+    const result = model.getValue();
+    model.dispose();
+    return result;
 }
