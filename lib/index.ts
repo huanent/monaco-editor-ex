@@ -18,7 +18,7 @@ import {
 } from "./html";
 import { tryInitMonaco } from "./monaco";
 import { useJavascriptSnippet, useJavascriptModuleSuggest } from "./javascript";
-export { useUnocss } from "./html"
+export { useUnocss, htmlFormat } from "./html"
 export { useModuleResolve } from "./javascript"
 
 export function useMonacoEx(monaco: typeof Monaco) {

@@ -20,3 +20,18 @@ export function isScript(value: string | editor.IModel) {
         value === languageNames.javascript || value === languageNames.typescript
     );
 }
+
+export function getTempUri() {
+    return monaco.Uri.from({
+        scheme: "memory",
+        path: newGuid() + ".tmp"
+    })
+}
+
+export function newGuid() {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+        const r = (Math.random() * 16) | 0,
+            v = c === "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+    });
+}
