@@ -2,10 +2,6 @@ import type { parse } from "@babel/parser";
 
 export type AstTree = ReturnType<typeof parse>;
 
-interface ImportDeclaration {
-  source: { value: string; end: number; start: number };
-}
-
 export interface AstNode {
   type: string;
   start: number;
@@ -21,12 +17,13 @@ export interface StringLiteral extends AstNode {
   value: string;
 }
 
-export function getModulesFromAst(ast: AstTree):Source[] {
+export function getModulesFromAst(ast: AstTree): Source[] {
   const importDeclarations = getAstNode(ast, [
     "ImportDeclaration",
-  ]) as unknown as ImportDeclaration[];
+    "ExportNamedDeclaration"
+  ]) as unknown as { source: Source }[];
 
-  return importDeclarations.map((m) => m.source);
+  return importDeclarations.map((m) => m.source).filter(f => f);
 }
 
 export function getAstNode(node: any, types: string[]) {
@@ -84,7 +81,7 @@ export function getModuleByOffset(ast: AstTree | undefined, offset: number) {
 
   if (
     paths[paths.length - 1].type != "StringLiteral" ||
-    paths[paths.length - 2].type != "ImportDeclaration"
+    !["ImportDeclaration", "ExportNamedDeclaration"].includes(paths[paths.length - 2].type)
   ) {
     return;
   }
