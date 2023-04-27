@@ -43,6 +43,7 @@ class ClassCompletionItemAdapter
         for (const m of suggests) {
             const result = await unocss.generate(m, {
                 preflights: false,
+                safelist: false,
             });
             const colorString = getColorString(result.css);
             suggestions.push({
