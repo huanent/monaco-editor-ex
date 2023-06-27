@@ -23,7 +23,7 @@ class ClassCompletionItemAdapter
         const classToken = getClassToken(model, offset);
         if (!classToken) return;
         const words = getWords(classToken.content, offset - classToken.start);
-        const result = await unocssAutocomplete.suggest(words.current.content);
+        const result = await unocssAutocomplete.suggest(words.current.content, true);
         const suggests = [];
 
         for (const i of result) {
