@@ -1,13 +1,13 @@
 import type { IDisposable, editor } from "../monaco"
 import { monaco } from "../monaco"
-import { isScript } from "../utils";
+import { isInnerModel, isScript } from "../utils";
 import { getModulesFromAst } from "./ast";
 import { Module, ModuleState, createModule, getModule, removeModule } from "./moduleState";
 import { standardizeScriptUri } from "./utils";
 
 function didCreateModel(model: editor.IModel) {
     if (model.uri.scheme == "memory") return;
-    if (!isScript(model)) return;
+    if (!isScript(model)||isInnerModel(model)) return;
     var uri = standardizeScriptUri(model.uri).toString()
     var module = getModule(uri) ?? createModule(uri, model.getValue())
     resolveModules(module)
@@ -35,13 +35,14 @@ function didChangeModelLanguage(e: { model: editor.IModel, oldLanguage: string }
 }
 
 export function resolveModules(module: Module) {
-    if (!module.ast) return;
+    if (!module?.ast) return;
     const moduleNames = getModulesFromAst(module.ast).map((m) => m.value);
     Promise.all(moduleNames.map(resolveModule));
 }
 
 async function resolveModule(name: string) {
     const uri = standardizeScriptUri(name).toString();
+    if (isInnerModel(uri)) return;
     const module = getModule(uri) ?? createModule(uri);
 
     if (
