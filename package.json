@@ -56,5 +56,8 @@
     "vitest": "^0.28.3",
     "vscode-css-languageservice": "^6.2.2",
     "vscode-html-languageservice": "^5.0.4"
+  },
+  "dependencies": {
+    "@einheit/path-resolve": "^1.2.0"
   }
 }

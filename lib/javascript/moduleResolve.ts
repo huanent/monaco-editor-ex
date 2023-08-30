@@ -3,12 +3,12 @@ import { monaco } from "../monaco"
 import { isInnerModel, isScript } from "../utils";
 import { getModulesFromAst } from "./ast";
 import { Module, ModuleState, createModule, getModule, removeModule } from "./moduleState";
-import { standardizeScriptUri } from "./utils";
+import { getModuleKey } from "./utils";
 
 function didCreateModel(model: editor.IModel) {
     if (model.uri.scheme == "memory") return;
-    if (!isScript(model)||isInnerModel(model)) return;
-    var uri = standardizeScriptUri(model.uri).toString()
+    if (!isScript(model) || isInnerModel(model)) return;
+    var uri = getModuleKey(model.uri)
     var module = getModule(uri) ?? createModule(uri, model.getValue())
     resolveModules(module)
 
@@ -20,16 +20,16 @@ function didCreateModel(model: editor.IModel) {
 
 function willDisposeModel(model: editor.IModel) {
     if (!isScript(model)) return;
-    removeModule(standardizeScriptUri(model.uri).toString())
+    removeModule(getModuleKey(model.uri))
 }
 
 function didChangeModelLanguage(e: { model: editor.IModel, oldLanguage: string }) {
     if (isScript(e.oldLanguage)) {
-        removeModule(standardizeScriptUri(e.model.uri).toString())
+        removeModule(getModuleKey(e.model.uri))
     }
 
     if (isScript(e.model)) {
-        var uri = standardizeScriptUri(e.model.uri).toString()
+        var uri = getModuleKey(e.model.uri)
         getModule(uri) ?? createModule(uri, e.model.getValue())
     }
 }
@@ -37,11 +37,14 @@ function didChangeModelLanguage(e: { model: editor.IModel, oldLanguage: string }
 export function resolveModules(module: Module) {
     if (!module?.ast) return;
     const moduleNames = getModulesFromAst(module.ast).map((m) => m.value);
-    Promise.all(moduleNames.map(resolveModule));
+
+    for (const moduleName of moduleNames) {
+        resolveModule(moduleName, module.uri)
+    }
 }
 
-async function resolveModule(name: string) {
-    const uri = standardizeScriptUri(name).toString();
+async function resolveModule(name: string, source: string) {
+    const uri = getModuleKey(name, source);
     if (isInnerModel(uri)) return;
     const module = getModule(uri) ?? createModule(uri);
 

@@ -6,34 +6,36 @@ useMonacoEx(monaco)
 useUnocss()
 useModuleResolve(path => {
   console.log(path)
-  return Promise.resolve("export interface abc{ name:string}")
+  if (path == "file:///node_modules/@types/module:myLib/index.d.ts") {
+    return Promise.resolve(`
+import {User} from './fileA';
+export function myLib():User{ 
+  return {
+    name:"jobs"
+  }
+}
+    `)
+  }
+  return Promise.resolve(`
+export interface User{ 
+  name:string;
+  age:number
+}
+  `)
 });
 
 useModuleSuggest(["./main", "./user.ts", "order", "order.ts"])
 
-monaco.editor.createModel(`
-export const customObject={
-  name:""
-}
-`, "javascript", monaco.Uri.file("myModule.js"))
+// monaco.editor.createModel(`
+// export const customObject={
+//   name:""
+// }
+// `, "javascript", monaco.Uri.file("myModule.js"))
 
 const model = monaco.editor.createModel(`
-<style>
-  div{
-    color:red;
-  }
-</style>
-<div>
-  
-</div>
-<script>
-  import {} from "./myModule"
-  function foo(){
-           return "bar";
+import {User} from "./user"
 
-        }
-</${'script'}>
-`, "html", monaco.Uri.file("main.html"))
+`, "typescript", monaco.Uri.file("main.ts"))
 
 monaco.editor.create(document.querySelector("#app")!, {
   model

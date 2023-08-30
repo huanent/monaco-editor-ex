@@ -3,7 +3,7 @@ import { IDisposable, Position, editor, languages } from "../monaco";
 import { monaco } from "../monaco";
 import { getModuleByOffset } from "./ast";
 import { Module, getModule } from "./moduleState";
-import { standardizeScriptUri, trimPathPrefix, trimScriptPathExtension } from "./utils";
+import { getModuleKey, trimPathPrefix, trimScriptPathExtension } from "./utils";
 
 class ModuleSuggestAdapter
     implements languages.CompletionItemProvider {
@@ -19,16 +19,16 @@ class ModuleSuggestAdapter
 export function getModuleSuggest(model: editor.ITextModel, position: Position, suggestions: string[]) {
     let module: Module | undefined;
     let offset: number | undefined;
-    module = getModule(standardizeScriptUri(model.uri).toString());
+    module = getModule(getModuleKey(model.uri));
     offset = model.getOffsetAt(position);
     if (!module || !offset) return;
     const moduleNode = getModuleByOffset(module.ast, offset);
     if (!moduleNode) return;
-    const currentModelPath = standardizeScriptUri(model.uri).toString()
+    const currentModelPath = getModuleKey(model.uri)
     const prefix = moduleNode.value.substring(0, offset - moduleNode.start)
     const items = suggestions
         .map(m => trimScriptPathExtension(m))
-        .filter((f) => f.startsWith(prefix) && standardizeScriptUri(f).toString() != currentModelPath);
+        .filter((f) => f.startsWith(prefix) && getModuleKey(f) != currentModelPath);
     if (!items.length) return;
     const moduleOffset = model.getOffsetAt(position) - offset;
     return {

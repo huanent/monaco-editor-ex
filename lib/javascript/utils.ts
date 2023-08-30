@@ -1,6 +1,7 @@
 import { monaco } from "../monaco"
-import type { Uri, languages, editor } from "../monaco"
+import { Uri, languages, editor } from "../monaco"
 import type { SymbolDisplayPart } from "typescript";
+import resolve from "@einheit/path-resolve"
 
 export async function getJavascriptWorker(uri: Uri) {
 	const workerGetter = await monaco.languages.typescript.getJavaScriptWorker()
@@ -34,17 +35,34 @@ export function trimScriptPathExtension(path: string) {
 	return path;
 }
 
-export function standardizeScriptUri(value: string | Uri) {
+export function getModuleKey(value: string | Uri, source: string = "") {
 	if (typeof value != "string") {
 		value = value.path;
 	}
-	value = trimPathPrefix(value);
-	value = trimScriptPathExtension(value);
-	return monaco.Uri.file(value + '.ts')
+
+	if (isRelativeOrAbsolute(value)) {
+		if (source) {
+			if (source.startsWith("file://")) {
+				source = source.substring(7)
+			}
+			const index = source.lastIndexOf("/");
+			source = source.substring(0, index);
+			source = resolve(source, value)
+			return `file://${source}.ts`
+		} else {
+			value = trimPathPrefix(value);
+			value = trimScriptPathExtension(value);
+			return `file:///${value}.ts`
+		}
+	} else {
+		return `file:///node_modules/@types/${value}/index.d.ts`
+	}
 }
 
-export function isRelativePath(path: string) {
+export function isRelativeOrAbsolute(path: string) {
 	return (
+		path.startsWith("/") ||
+		path.startsWith("\\") ||
 		path.startsWith("./") ||
 		path.startsWith(".\\") ||
 		path.startsWith("../") ||
@@ -56,7 +74,7 @@ interface TextEdit {
 	newText: string, span: { start: number, length: number }
 }
 
-export function toTextEdit(model: editor.IModel, textEdit: TextEdit): languages.TextEdit{
+export function toTextEdit(model: editor.IModel, textEdit: TextEdit): languages.TextEdit {
 	const start = model.getPositionAt(textEdit.span.start);
 	const end = model.getPositionAt(textEdit.span.start + textEdit.span.length);
 	return {
