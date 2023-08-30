@@ -36,13 +36,13 @@ export function trimScriptPathExtension(path: string) {
 
 export function getModuleKey(value: string | Uri, source: string = "") {
 	if (typeof value != "string") {
-		value = value.path;
+		return decodeURIComponent(value.toString())
 	}
 
 	if (isRelativeOrAbsolute(value)) {
 		if (source) {
 			value = trimScriptPathExtension(value);
-			return getAbsolutePath(source, value)+".ts";
+			return getAbsolutePath(source, value) + ".ts";
 		} else {
 			value = trimPathPrefix(value);
 			value = trimScriptPathExtension(value);

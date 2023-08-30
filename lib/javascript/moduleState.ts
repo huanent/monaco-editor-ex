@@ -30,6 +30,12 @@ export class Module {
     this.ast = this.parseAst(value);
     monaco.languages.typescript.javascriptDefaults.addExtraLib(value, this.uri);
     monaco.languages.typescript.typescriptDefaults.addExtraLib(value, this.uri);
+    const encodedUri = encodeURIComponent(this.uri)
+
+    if (encodedUri != this.uri) {
+      monaco.languages.typescript.javascriptDefaults.addExtraLib(value, encodedUri);
+      monaco.languages.typescript.typescriptDefaults.addExtraLib(value, encodedUri);
+    }
   }
 
   parseAst(content: string) {
@@ -73,6 +79,12 @@ export function removeModule(uri: string) {
     delete modules[uri];
     monaco.languages.typescript.javascriptDefaults.addExtraLib("", uri);
     monaco.languages.typescript.typescriptDefaults.addExtraLib("", uri);
+    const encodedUri = encodeURIComponent(uri)
+
+    if (encodedUri != uri) {
+      monaco.languages.typescript.javascriptDefaults.addExtraLib("", encodedUri);
+      monaco.languages.typescript.typescriptDefaults.addExtraLib("", encodedUri);
+    }
   }
 }
 
