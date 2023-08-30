@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite'
 import dts from "vite-plugin-dts";
 
@@ -22,6 +23,6 @@ export default defineConfig({
   },
   plugins: [dts({ entryRoot: 'lib/index.ts', outputDir: "dist/lib" })],
   test: {
-    environment: "happy-dom"
+    environment: "happy-dom",
   }
 })
