@@ -1,7 +1,6 @@
 import { monaco } from "../monaco"
 import { Uri, languages, editor } from "../monaco"
 import type { SymbolDisplayPart } from "typescript";
-import resolve from "@einheit/path-resolve"
 
 export async function getJavascriptWorker(uri: Uri) {
 	const workerGetter = await monaco.languages.typescript.getJavaScriptWorker()
@@ -42,13 +41,8 @@ export function getModuleKey(value: string | Uri, source: string = "") {
 
 	if (isRelativeOrAbsolute(value)) {
 		if (source) {
-			if (source.startsWith("file://")) {
-				source = source.substring(7)
-			}
-			const index = source.lastIndexOf("/");
-			source = source.substring(0, index);
-			source = resolve(source, value)
-			return `file://${source}.ts`
+			value = trimScriptPathExtension(value);
+			return getAbsolutePath(source, value)+".ts";
 		} else {
 			value = trimPathPrefix(value);
 			value = trimScriptPathExtension(value);
@@ -68,6 +62,21 @@ export function isRelativeOrAbsolute(path: string) {
 		path.startsWith("../") ||
 		path.startsWith("..\\")
 	);
+}
+
+function getAbsolutePath(base: string, relative: string) {
+	var stack = base.split("/"),
+		parts = relative.split("/");
+	stack.pop();
+	for (var i = 0; i < parts.length; i++) {
+		if (parts[i] == ".")
+			continue;
+		if (parts[i] == "..")
+			stack.pop();
+		else
+			stack.push(parts[i]);
+	}
+	return stack.join("/");
 }
 
 interface TextEdit {

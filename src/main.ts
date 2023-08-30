@@ -33,7 +33,7 @@ useModuleSuggest(["./main", "./user.ts", "order", "order.ts"])
 // `, "javascript", monaco.Uri.file("myModule.js"))
 
 const model = monaco.editor.createModel(`
-import {User} from "./user"
+import {myLib} from "module:myLib"
 
 `, "typescript", monaco.Uri.file("main.ts"))
 
