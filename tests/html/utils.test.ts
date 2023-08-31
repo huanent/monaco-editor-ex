@@ -1,5 +1,5 @@
-import { expect, test, describe } from 'vitest'
-import { toLsPosition } from "../lib/html/utils"
+import { expect, test } from 'vitest'
+import { toLsPosition } from "../../lib/html/utils"
 import { Position } from "monaco-editor/esm/vs/editor/editor.api"
 
 test('toLsPosition', () => {

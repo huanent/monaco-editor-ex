@@ -1,6 +1,7 @@
 import { parse } from "@babel/parser";
 import type { AstTree } from "./ast";
 import { monaco } from "../monaco";
+import { sameUris } from "./utils";
 
 const modules: Record<string, Module> = {};
 
@@ -28,13 +29,11 @@ export class Module {
     this._content = value;
     this.state = ModuleState.success;
     this.ast = this.parseAst(value);
-    monaco.languages.typescript.javascriptDefaults.addExtraLib(value, this.uri);
-    monaco.languages.typescript.typescriptDefaults.addExtraLib(value, this.uri);
-    const encodedUri = monaco.Uri.parse(this.uri).toString()
+    const uris = sameUris(this.uri);
 
-    if (encodedUri != this.uri) {
-      monaco.languages.typescript.javascriptDefaults.addExtraLib(value, encodedUri);
-      monaco.languages.typescript.typescriptDefaults.addExtraLib(value, encodedUri);
+    for (const i of uris) {
+      monaco.languages.typescript.javascriptDefaults.addExtraLib(value, i);
+      monaco.languages.typescript.typescriptDefaults.addExtraLib(value, i);
     }
   }
 
@@ -77,13 +76,11 @@ export function getModule(uri: string) {
 export function removeModule(uri: string) {
   if (modules[uri]) {
     delete modules[uri];
-    monaco.languages.typescript.javascriptDefaults.addExtraLib("", uri);
-    monaco.languages.typescript.typescriptDefaults.addExtraLib("", uri);
-    const encodedUri = monaco.Uri.parse(uri).toString()
+    const uris = sameUris(uri);
 
-    if (encodedUri != uri) {
-      monaco.languages.typescript.javascriptDefaults.addExtraLib("", encodedUri);
-      monaco.languages.typescript.typescriptDefaults.addExtraLib("", encodedUri);
+    for (const i of uris) {
+      monaco.languages.typescript.javascriptDefaults.addExtraLib("", i);
+      monaco.languages.typescript.typescriptDefaults.addExtraLib("", i);
     }
   }
 }
@@ -96,3 +93,5 @@ export function removeModules() {
   monaco.languages.typescript.javascriptDefaults.setExtraLibs([]);
   monaco.languages.typescript.typescriptDefaults.setExtraLibs([]);
 }
+
+

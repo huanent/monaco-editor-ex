@@ -6,7 +6,7 @@ useMonacoEx(monaco)
 useUnocss()
 useModuleResolve(path => {
   console.log(path)
-  if (path == "file:///node_modules/@types/module:myLib/index.d.ts") {
+  if (path.startsWith("file:///node_modules/@types/module:myLib/index")) {
     return Promise.resolve(`
 import {User} from './fileA';
 export function myLib():User{ 
@@ -33,9 +33,9 @@ useModuleSuggest(["./main", "./user.ts", "order", "order.ts"])
 // `, "javascript", monaco.Uri.file("myModule.js"))
 
 const model = monaco.editor.createModel(`
-import {myLib} from "./user"
+import {myLib} from "module:myLib"
 
-`, "typescript", monaco.Uri.parse("file:///node_modules/@types/module:myLib/index.d.ts"))
+`, "typescript", monaco.Uri.parse("file:///main.ts"))
 
 monaco.editor.create(document.querySelector("#app")!, {
   model

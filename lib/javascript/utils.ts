@@ -49,7 +49,7 @@ export function getModuleKey(value: string | Uri, source: string = "") {
 			return `file:///${value}.ts`
 		}
 	} else {
-		return `file:///node_modules/@types/${value}/index.d.ts`
+		return `file:///node_modules/@types/${value}/index.ts`
 	}
 }
 
@@ -90,4 +90,16 @@ export function toTextEdit(model: editor.IModel, textEdit: TextEdit): languages.
 		range: monaco.Range.fromPositions(start, end),
 		text: textEdit.newText
 	};
+}
+
+export function sameUris(uri: string) {
+	const result = [uri]
+	const encodedUri = monaco.Uri.parse(uri).toString()
+	if (encodedUri != uri) {
+		result.push(encodedUri)
+	}
+	if (uri.endsWith("/index.ts")) {
+		result.push(uri.substring(0, uri.length - 3) + ".d.ts")
+	}
+	return result;
 }
