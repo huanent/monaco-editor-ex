@@ -18,11 +18,13 @@ import {
 } from "./html";
 import { tryInitMonaco } from "./monaco";
 import { useJavascriptSnippet, useJavascriptModuleSuggest } from "./javascript";
+import { removeModules } from "./javascript/moduleState"
+import { monaco } from "./monaco";
 export { useUnocss, htmlFormat } from "./html"
 export { useModuleResolve } from "./javascript"
 
-export function useMonacoEx(monaco: typeof Monaco) {
-  if (!tryInitMonaco(monaco)) return
+export function useMonacoEx(monacoInstance: typeof Monaco) {
+  if (!tryInitMonaco(monacoInstance)) return
   useAutoCloseTag()
   useJavascriptSuggestInHtml();
   useJavascriptSignatureHelpInHtml();
@@ -43,4 +45,16 @@ export function useMonacoEx(monaco: typeof Monaco) {
 export function useModuleSuggest(modules?: (() => Promise<string[]>) | string[]) {
   useJavascriptModuleSuggest(modules)
   useHtmlModuleSuggest(modules)
+}
+
+export function removeAllModules() {
+  if (monaco) {
+    const models = monaco.editor.getModels();
+
+    for (const i of models) {
+      i.dispose()
+    }
+  }
+
+  removeModules();
 }
