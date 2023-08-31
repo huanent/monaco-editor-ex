@@ -98,8 +98,10 @@ export function sameUris(uri: string) {
 	if (encodedUri != uri) {
 		result.push(encodedUri)
 	}
+
 	if (uri.endsWith("/index.ts")) {
 		result.push(uri.substring(0, uri.length - 3) + ".d.ts")
+		result.push(encodedUri.substring(0, encodedUri.length - 3) + ".d.ts")
 	}
 	return result;
 }
