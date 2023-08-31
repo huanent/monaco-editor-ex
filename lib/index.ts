@@ -40,7 +40,7 @@ export function useMonacoEx(monaco: typeof Monaco) {
   useJavascriptInHtml();
 }
 
-export function useModuleSuggest(modules: string[] = []) {
+export function useModuleSuggest(modules?: (() => Promise<string[]>) | string[]) {
   useJavascriptModuleSuggest(modules)
   useHtmlModuleSuggest(modules)
 }

@@ -13,13 +13,20 @@ class ModuleSuggestAdapter
     ): Promise<languages.CompletionList | undefined> {
         var javascriptModel = monaco.editor.getModel(getEmbeddedJavascriptUri(model))
         if (!javascriptModel) return;
-        return getModuleSuggest(javascriptModel, position, _suggestions);
+        const suggestions = await getSuggestions();
+        return getModuleSuggest(javascriptModel, position, suggestions);
     }
 }
 
 let initialized = false;
 let disposables: IDisposable[] = [];
-let _suggestions: string[]
+let _suggestions: (() => Promise<string[]>) | string[] | undefined;
+
+async function getSuggestions() {
+    if (!_suggestions) return [];
+    if (Array.isArray(_suggestions)) return _suggestions;
+    return await _suggestions();
+}
 
 function dispose() {
     initialized = false;
@@ -28,8 +35,7 @@ function dispose() {
     disposables.length = 0;
 }
 
-
-export function useHtmlModuleSuggest(modules: string[] = []) {
+export function useHtmlModuleSuggest(modules?: (() => Promise<string[]>) | string[]) {
     _suggestions = modules;
     if (initialized) return dispose;
     initialized = true;
