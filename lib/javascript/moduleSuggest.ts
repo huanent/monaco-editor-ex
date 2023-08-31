@@ -12,7 +12,8 @@ class ModuleSuggestAdapter
         model: editor.ITextModel,
         position: Position
     ): Promise<languages.CompletionList | undefined> {
-        return getModuleSuggest(model, position, _suggestions);
+        const suggestions = await getSuggestions();
+        return getModuleSuggest(model, position, suggestions);
     }
 }
 
@@ -47,17 +48,23 @@ export function getModuleSuggest(model: editor.ITextModel, position: Position, s
 
 let initialized = false;
 let disposables: IDisposable[] = [];
-let _suggestions: string[]
+let _suggestions: (() => Promise<string[]>) | string[] | undefined;
+
+async function getSuggestions() {
+    if (!_suggestions) return [];
+    if (Array.isArray(_suggestions)) return _suggestions;
+    return await _suggestions();
+}
 
 function dispose() {
     initialized = false;
-    _suggestions = [];
+    _suggestions = undefined;
     disposables.forEach((d) => d && d.dispose());
     disposables.length = 0;
 }
 
 
-export function useJavascriptModuleSuggest(modules: string[] = []) {
+export function useJavascriptModuleSuggest(modules?: (() => Promise<string[]>) | string[]) {
     _suggestions = modules;
     if (initialized) return dispose;
     initialized = true;
