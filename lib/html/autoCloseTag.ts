@@ -9,6 +9,7 @@ export function useAutoCloseTag() {
             var model = ed.getModel();
             if (model?.getLanguageId() != languageNames.html) return;
             if (e.isRedoing || e.isUndoing || e.changes.length != 1) return;
+            if (model?.uri.query.indexOf("disable_auto_close_tag") > -1) return;
 
             const change = e.changes[0];
             if (change.text == ">") {
