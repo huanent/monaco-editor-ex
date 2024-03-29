@@ -6,6 +6,7 @@
 import { LanguageService, TokenType, Range, Position as HtmlPosition, TextDocument } from 'vscode-html-languageservice';
 import { Position } from '../monaco';
 import { toLsPosition } from './utils';
+import { getDirectiveRegion } from './directive';
 
 export interface LanguageRange extends Range {
 	languageId: string | undefined;
@@ -29,6 +30,7 @@ export interface EmbeddedRegion {
 	start: number;
 	end: number;
 	attributeValue?: boolean;
+	transform?: () => void
 }
 
 export function getDocumentRegions(
@@ -98,6 +100,9 @@ export function getDocumentRegions(
 						}
 						regions.push({ languageId: attributeLanguageId, start, end, attributeValue: true });
 					}
+
+					const directiveRegion = getDirectiveRegion(lastAttributeName!, scanner, document);
+					if (directiveRegion) regions.push(directiveRegion)
 				}
 				lastAttributeName = null;
 				break;
@@ -201,7 +206,7 @@ function getRegionAtPosition(
 	position: Position
 ): EmbeddedRegion | undefined {
 	let offset = document.offsetAt(toLsPosition(position));
-	
+
 	for (let region of regions) {
 		if (region.start <= offset) {
 			if (offset <= region.end) {
@@ -247,6 +252,7 @@ function getEmbeddedDocument(
 		lastSuffix,
 		''
 	);
+	
 	return TextDocument.create(document.uri, languageId, document.version, result);
 }
 
