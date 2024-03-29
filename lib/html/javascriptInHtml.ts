@@ -32,13 +32,13 @@ function tryRemoveEmbeddedModel(uri: Uri) {
 }
 
 function createEmbeddedModel(model: editor.IModel) {
-    const content = htmlRegionCache.get(model).getEmbeddedDocument(languageNames.javascript, true)
+    const content = htmlRegionCache.get(model).getEmbeddedDocument(languageNames.javascript)
     const uri = getEmbeddedJavascriptUri(model.uri)
     monaco.editor.createModel(content.getText(), languageNames.javascript, uri)
 
     model.onDidChangeContent(() => {
         if (model.getLanguageId() == languageNames.html) {
-            const content = htmlRegionCache.get(model).getEmbeddedDocument(languageNames.javascript, true)
+            const content = htmlRegionCache.get(model).getEmbeddedDocument(languageNames.javascript)
             const embeddedModel = monaco.editor.getModel(uri);
             embeddedModel?.setValue(content.getText()) //TODO 优化
         }
