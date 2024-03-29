@@ -9,7 +9,7 @@ class CssReferenceAdapter implements languages.ReferenceProvider {
     async provideReferences(model: editor.ITextModel, position: Position, _context: languages.ReferenceContext, _token: CancellationToken): Promise<languages.Location[] | undefined> {
         const regions = htmlRegionCache.get(model);
         if (regions.getLanguageAtPosition(position) != languageNames.css) return;
-        const cssDocument = regions.getEmbeddedDocument(languageNames.css, true);
+        const cssDocument = regions.getEmbeddedDocument(languageNames.css);
         const cssService = getCssService()
         const style = cssService.parseStylesheet(cssDocument);
         const entries = cssService.findReferences(cssDocument, toLsPosition(position), style)

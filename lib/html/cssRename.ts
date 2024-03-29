@@ -9,7 +9,7 @@ class CssRenameAdapter implements languages.RenameProvider {
     provideRenameEdits(model: editor.ITextModel, position: Position, newName: string, _token: CancellationToken): languages.ProviderResult<languages.WorkspaceEdit & languages.Rejection> {
         const regions = htmlRegionCache.get(model);
         if (regions.getLanguageAtPosition(position) != languageNames.css) return;
-        const cssDocument = regions.getEmbeddedDocument(languageNames.css, true);
+        const cssDocument = regions.getEmbeddedDocument(languageNames.css);
         const cssService = getCssService()
         const style = cssService.parseStylesheet(cssDocument);
         const edit = cssService.doRename(cssDocument, toLsPosition(position), newName, style)

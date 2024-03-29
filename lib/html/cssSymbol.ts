@@ -7,7 +7,7 @@ import { monaco } from "../monaco"
 class CssDocumentSymbolAdapter implements languages.DocumentSymbolProvider {
     async provideDocumentSymbols(model: editor.ITextModel, _token: CancellationToken): Promise<languages.DocumentSymbol[] | undefined> {
         const regions = htmlRegionCache.get(model);
-        const cssDocument = regions.getEmbeddedDocument(languageNames.css, true);
+        const cssDocument = regions.getEmbeddedDocument(languageNames.css);
         const cssService = getCssService();
         const style = cssService.parseStylesheet(cssDocument);
         const items = cssService.findDocumentSymbols(cssDocument, style);

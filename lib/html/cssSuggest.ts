@@ -15,7 +15,7 @@ class CssSuggestAdapter implements languages.CompletionItemProvider {
         if (regions.getLanguageAtPosition(position) != languageNames.css) return;
         const wordRange = getWordRange(model, position);
 
-        const cssDocument = regions.getEmbeddedDocument(languageNames.css, true);
+        const cssDocument = regions.getEmbeddedDocument(languageNames.css);
         if (!cssDocument) return;
         const cssService = getCssService();
         const style = stylesheetCache.get(model)

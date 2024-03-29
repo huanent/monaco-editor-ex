@@ -13,7 +13,7 @@ class CssHoverAdapter implements languages.HoverProvider {
     ): Promise<languages.Hover | undefined> {
         const regions = htmlRegionCache.get(model);
         if (regions.getLanguageAtPosition(position) != languageNames.css) return;
-        const cssDocument = regions.getEmbeddedDocument(languageNames.css, true);
+        const cssDocument = regions.getEmbeddedDocument(languageNames.css);
         const cssService = getCssService();
         const style = cssService.parseStylesheet(cssDocument);
         const info = cssService.doHover(cssDocument, toLsPosition(position), style)

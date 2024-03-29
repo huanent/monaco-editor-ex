@@ -13,7 +13,7 @@ class CssDocumentHighlightAdapter implements languages.DocumentHighlightProvider
     ): Promise<languages.DocumentHighlight[] | undefined> {
         const regions = htmlRegionCache.get(model);
         if (regions.getLanguageAtPosition(position) != languageNames.css) return;
-        const cssDocument = regions.getEmbeddedDocument(languageNames.css, true);
+        const cssDocument = regions.getEmbeddedDocument(languageNames.css);
         const cssService = getCssService();
         const style = cssService.parseStylesheet(cssDocument);
         const entries = cssService.findDocumentHighlights(cssDocument, toLsPosition(position), style)

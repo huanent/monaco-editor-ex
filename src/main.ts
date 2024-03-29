@@ -34,10 +34,22 @@ useModuleSuggest(["./main", "./user.ts", "order", "order.ts"])
 
 const model = monaco.editor.createModel(`
 <html>
-<body></body>
+<body>
+<style>
+.abc{
+  color:red;
+}
+</style>
+<div style="color:red;"></div>
+
+<script>
+  alert('aa')
+</script>
+<div onclick="console.log('aa')"></div>
+</body>
 </html>
 
-`, "html", monaco.Uri.parse("file:///main.ts?disable_auto_close_tag=true"))
+`, "html", monaco.Uri.parse("file:///main.html"))
 
 monaco.editor.create(document.querySelector("#app")!, {
   model

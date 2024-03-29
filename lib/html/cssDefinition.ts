@@ -9,7 +9,7 @@ class CssDefinitionAdapter implements languages.DefinitionProvider {
     async provideDefinition(model: editor.ITextModel, position: Position, _token: CancellationToken): Promise<languages.Definition | undefined> {
         const regions = htmlRegionCache.get(model);
         if (regions.getLanguageAtPosition(position) != languageNames.css) return;
-        const cssDocument = regions.getEmbeddedDocument(languageNames.css, true);
+        const cssDocument = regions.getEmbeddedDocument(languageNames.css);
         const cssService = getCssService()
         const style = cssService.parseStylesheet(cssDocument);
         const definition = cssService.findDefinition(cssDocument, toLsPosition(position), style)

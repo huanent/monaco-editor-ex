@@ -10,7 +10,7 @@ class CssDocumentColorAdapter implements languages.DocumentColorProvider {
         _token: CancellationToken
     ): Promise<languages.IColorInformation[] | undefined> {
         const regions = htmlRegionCache.get(model);
-        const cssDocument = regions.getEmbeddedDocument(languageNames.css, true);
+        const cssDocument = regions.getEmbeddedDocument(languageNames.css);
         const cssService = getCssService()
         const style = cssService.parseStylesheet(cssDocument);
         const infos = cssService.findDocumentColors(cssDocument, style)
@@ -28,7 +28,7 @@ class CssDocumentColorAdapter implements languages.DocumentColorProvider {
         _token: CancellationToken
     ): Promise<languages.IColorPresentation[] | undefined> {
         const regions = htmlRegionCache.get(model);
-        const cssDocument = regions.getEmbeddedDocument(languageNames.css, true);
+        const cssDocument = regions.getEmbeddedDocument(languageNames.css);
         const cssService = getCssService()
         const style = cssService.parseStylesheet(cssDocument);
         const presentations = cssService.getColorPresentations(cssDocument, style, info.color, fromRange(info.range)!)

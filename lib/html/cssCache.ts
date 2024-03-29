@@ -8,7 +8,7 @@ import { getCssService } from "../css/utils";
 export class StylesheetCache extends Cache<Stylesheet>{
     _getCache(model: editor.ITextModel) {
         const regions = htmlRegionCache.get(model);
-        const cssDocument = regions.getEmbeddedDocument(languageNames.css, true);
+        const cssDocument = regions.getEmbeddedDocument(languageNames.css);
         const cssService = getCssService();
         return cssService.parseStylesheet(cssDocument);
     }

@@ -10,7 +10,7 @@ class CssFoldingRangeAdapter implements languages.FoldingRangeProvider {
     async provideFoldingRanges(model: editor.ITextModel, _context: languages.FoldingContext, _token: CancellationToken): Promise<languages.FoldingRange[] | undefined> {
 
         const regions = htmlRegionCache.get(model);
-        const cssDocument = regions.getEmbeddedDocument(languageNames.css, true);
+        const cssDocument = regions.getEmbeddedDocument(languageNames.css);
         const cssService = getCssService();
         const ranges = cssService.getFoldingRanges(cssDocument)
         return ranges.map((range) => {
