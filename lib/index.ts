@@ -14,7 +14,8 @@ import {
   useCssHighlightInHtml,
   useJavascriptInHtml,
   useHtmlFormatting,
-  useHtmlModuleSuggest
+  useHtmlModuleSuggest,
+  useJavascriptFoldingRangeInHtml
 } from "./html";
 import { tryInitMonaco } from "./monaco";
 import { useJavascriptSnippet, useJavascriptModuleSuggest } from "./javascript";
@@ -30,6 +31,7 @@ export function useMonacoEx(monacoInstance: typeof Monaco) {
   useJavascriptSignatureHelpInHtml();
   useJavascriptQuickInfoInHtml();
   useJavascriptOccurrencesInHtml();
+  useJavascriptFoldingRangeInHtml();
   useCssSuggestInHtml();
   useCssHoverInHtml();
   useCssFoldingRangeInHtml();

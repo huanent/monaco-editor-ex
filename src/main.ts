@@ -51,7 +51,11 @@ const model = monaco.editor.createModel(`
 <div style="color:red;"></div>
 
 <script>
-  var abc=[1,2,3]
+  var abc=[1,2,3];
+  function aaa(){
+
+    
+  }
 </script>
 <div onclick="console.log('aa')"></div>
 <img :src="abc[0]" />
