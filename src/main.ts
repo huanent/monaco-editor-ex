@@ -28,7 +28,7 @@ useModuleSuggest(["./main", "./user.ts", "order", "order.ts"])
 useDirective([{
   language: "javascript",
   matcher: "k-for",
-  appendContent(value: string) {
+  appendContent(_value: string) {
     return ";var item:typeof abc[0];"
   },
 }, {
