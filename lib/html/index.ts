@@ -1,4 +1,5 @@
 export * from "./autoCloseTag"
+export * from "./directive"
 export * from "./javascriptSuggest"
 export * from "./javascriptSignatureHelp"
 export * from "./javascriptQuickInfo"

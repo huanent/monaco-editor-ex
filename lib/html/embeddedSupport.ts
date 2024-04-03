@@ -230,12 +230,14 @@ function getEmbeddedDocument(
 	let result = '';
 	let lastSuffix = '';
 	let padding = ""
+	let appendContentCount = 0;
 	for (let c of contents) {
 		if (c.languageId === languageId && (!ignoreAttributeValues || !c.attributeValue)) {
 			if (shouldAppendContent(currentPos, c.start, oldContent)) {
 				result += padding;
 				padding = ""
 			}
+
 			result = substituteWithWhitespace(
 				result,
 				currentPos,
@@ -244,11 +246,13 @@ function getEmbeddedDocument(
 				lastSuffix,
 				getPrefix(c)
 			);
+
 			const value = oldContent.substring(c.start, c.end);
-			result += value;
 			if (c.appendContent) {
-				padding += c.appendContent(value)
+				padding += `;${c.appendContent(value)}`
+				appendContentCount++;
 			}
+			result += value;
 			currentPos = c.end;
 			lastSuffix = getSuffix(c);
 		}
@@ -265,6 +269,8 @@ function getEmbeddedDocument(
 		''
 	);
 
+	result += Array(appendContentCount).fill('}').join('');
+
 	return TextDocument.create(document.uri, languageId, document.version, result);
 }
 
@@ -273,6 +279,8 @@ function getPrefix(c: EmbeddedRegion) {
 		switch (c.languageId) {
 			case 'css':
 				return CSS_STYLE_RULE + '{';
+			case 'javascript':
+				if (c.appendContent) return "{"
 		}
 	}
 	return '';

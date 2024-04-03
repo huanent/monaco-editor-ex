@@ -21,9 +21,8 @@ import { tryInitMonaco } from "./monaco";
 import { useJavascriptSnippet, useJavascriptModuleSuggest } from "./javascript";
 import { removeModules } from "./javascript/moduleState"
 import { monaco } from "./monaco";
-export { useUnocss, htmlFormat } from "./html"
+export { useUnocss, htmlFormat, useDirective } from "./html"
 export { useModuleResolve } from "./javascript"
-export { useDirective } from "./html/directive"
 
 export function useMonacoEx(monacoInstance: typeof Monaco) {
   if (!tryInitMonaco(monacoInstance)) return
