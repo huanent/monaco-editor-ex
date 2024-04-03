@@ -7,7 +7,6 @@ import { LanguageService, TokenType, Range, Position as HtmlPosition, TextDocume
 import { Position } from '../monaco';
 import { toLsPosition } from './utils';
 import { getDirectiveRegion } from './directive';
-import { ListFormat } from 'typescript';
 
 export interface LanguageRange extends Range {
 	languageId: string | undefined;
