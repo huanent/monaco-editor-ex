@@ -30,7 +30,7 @@ export interface EmbeddedRegion {
 	start: number;
 	end: number;
 	attributeValue?: boolean;
-	transform?: () => void
+	appendContent?: (value: string) => string
 }
 
 export function getDocumentRegions(
@@ -229,8 +229,13 @@ function getEmbeddedDocument(
 	let oldContent = document.getText();
 	let result = '';
 	let lastSuffix = '';
+	let padding = ""
 	for (let c of contents) {
 		if (c.languageId === languageId && (!ignoreAttributeValues || !c.attributeValue)) {
+			if (shouldAppendContent(currentPos, c.start, oldContent)) {
+				result += padding;
+				padding = ""
+			}
 			result = substituteWithWhitespace(
 				result,
 				currentPos,
@@ -239,11 +244,18 @@ function getEmbeddedDocument(
 				lastSuffix,
 				getPrefix(c)
 			);
-			result += oldContent.substring(c.start, c.end);
+			const value = oldContent.substring(c.start, c.end);
+			result += value;
+			if (c.appendContent) {
+				padding += c.appendContent(value)
+			}
 			currentPos = c.end;
 			lastSuffix = getSuffix(c);
 		}
 	}
+
+	if (padding) result += padding;
+
 	result = substituteWithWhitespace(
 		result,
 		currentPos,
@@ -252,7 +264,7 @@ function getEmbeddedDocument(
 		lastSuffix,
 		''
 	);
-	
+
 	return TextDocument.create(document.uri, languageId, document.version, result);
 }
 
@@ -320,3 +332,12 @@ function getAttributeLanguage(attributeName: string): string | null {
 	}
 	return match[1] ? 'css' : 'javascript';
 }
+function shouldAppendContent(start: number, end: number, oldContent: string) {
+	for (let i = start; i < end; i++) {
+		let ch = oldContent[i];
+		if (ch === '\n') {
+			return true
+		}
+	}
+}
+

@@ -1,7 +1,6 @@
 import './userWorker'
 import * as monaco from "monaco-editor"
-import { useMonacoEx, useUnocss, useModuleResolve, useModuleSuggest } from "../lib";
-import { useDirective } from '../lib/html/directive';
+import { useMonacoEx, useUnocss, useModuleResolve, useModuleSuggest, useDirective } from "../lib";
 
 useMonacoEx(monaco)
 useUnocss()
@@ -28,11 +27,17 @@ export interface User{
 useModuleSuggest(["./main", "./user.ts", "order", "order.ts"])
 useDirective([{
   language: "javascript",
-  matcher: "v-if"
+  matcher: "k-for",
+  appendContent(value: string) {
+    return ";var item:typeof abc[0];"
+  },
 }, {
   language: "javascript",
-  matcher: /^(\:\w+)$/i
-}])
+  matcher: "k-content",
+}, {
+  language: "javascript",
+  matcher: "k-if",
+}]);
 
 // monaco.editor.createModel(`
 // export const customObject={
@@ -52,16 +57,13 @@ const model = monaco.editor.createModel(`
 
 <script>
   var abc=[1,2,3];
-  function aaa(){
-
-    
-  }
 </script>
-<div onclick="console.log('aa')"></div>
-<img :src="abc[0]" />
+<div k-for="item abc" k-if="!!abc">
+  <div k-content="item."></div>
+
+</div>
 </body>
 </html>
-
 `, "html", monaco.Uri.parse("file:///main.html"))
 
 monaco.editor.create(document.querySelector("#app")!, {

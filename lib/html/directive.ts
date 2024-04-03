@@ -6,7 +6,7 @@ let _directives: Directive[] | undefined
 export interface Directive {
     matcher: string | RegExp,
     language: 'css' | 'javascript'
-    transform?: () => void
+    appendContent?: (value: string) => string
 }
 
 export function useDirective(directives?: Directive[]) {
@@ -34,7 +34,7 @@ export function getDirectiveRegion(attributeName: string, scanner: Scanner, docu
             } else {
                 continue;
             }
-            return { languageId: directive.language, start, end, attributeValue: true, transform: directive.transform }
+            return { languageId: directive.language, start, end, attributeValue: true, appendContent: directive.appendContent }
         }
     }
     return null;
