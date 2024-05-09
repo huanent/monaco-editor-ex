@@ -1,4 +1,5 @@
 import { languageNames } from "../constants";
+import { getJavascriptWorker } from "../javascript/utils";
 import type { languages, editor, CancellationToken } from "../monaco";
 import { monaco } from "../monaco"
 import { getEmbeddedJavascriptUri, textSpanToRange } from "./utils";
@@ -6,8 +7,7 @@ import ts from "typescript";
 
 class JavascriptFoldingRangeAdapter implements languages.FoldingRangeProvider {
     async provideFoldingRanges(model: editor.ITextModel, _context: languages.FoldingContext, _token: CancellationToken): Promise<languages.FoldingRange[] | undefined> {
-        const workerGetter = await monaco.languages.typescript.getJavaScriptWorker()
-        const worker = await workerGetter(getEmbeddedJavascriptUri(model))
+        const worker = await getJavascriptWorker(model.uri)
         const javascriptModel = monaco.editor.getModel(getEmbeddedJavascriptUri(model))
         if (!javascriptModel) return
 
