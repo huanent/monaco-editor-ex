@@ -1,6 +1,13 @@
 import './userWorker'
 import * as monaco from "monaco-editor"
-import { useMonacoEx, useUnocss, useModuleResolve, useModuleSuggest, useDirective } from "../lib";
+import {
+  useMonacoEx,
+  useUnocss,
+  useModuleResolve,
+  useModuleSuggest,
+  useDirective,
+  useJavascriptSuggestFilter
+} from "../lib";
 
 useMonacoEx(monaco)
 useUnocss()
@@ -23,6 +30,11 @@ export interface User{
 }
   `)
 });
+
+useJavascriptSuggestFilter((position, suggestions) => {
+  console.log(position)
+  return suggestions.filter(f => f.insertText != "JSON");
+})
 
 useModuleSuggest(["./main", "./user.ts", "order", "order.ts"])
 useDirective([{

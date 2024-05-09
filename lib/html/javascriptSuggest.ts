@@ -15,6 +15,9 @@ interface JavascriptCompletionItem extends languages.CompletionItem {
     offset: number;
 }
 
+type SuggestFilter = (position: Position, suggestions: JavascriptCompletionItem[]) => JavascriptCompletionItem[];
+let suggestFilter: SuggestFilter | undefined
+
 class JavascriptSuggestAdapter implements languages.CompletionItemProvider {
     triggerCharacters = ["."];
     async provideCompletionItems(model: editor.ITextModel, position: Position, _context: languages.CompletionContext, _token: CancellationToken): Promise<languages.CompletionList | undefined> {
@@ -31,7 +34,7 @@ class JavascriptSuggestAdapter implements languages.CompletionItemProvider {
             return;
         }
 
-        const suggestions: JavascriptCompletionItem[] = info.entries.map((entry: any) => {
+        let suggestions: JavascriptCompletionItem[] = info.entries.map((entry: any) => {
             let range = wordRange;
             if (entry.replacementSpan) {
                 const p1 = model.getPositionAt(entry.replacementSpan.start);
@@ -56,6 +59,10 @@ class JavascriptSuggestAdapter implements languages.CompletionItemProvider {
                 tags
             };
         });
+
+        if (suggestFilter) {
+            suggestions = suggestFilter(position, suggestions)
+        }
 
         return {
             suggestions: [...snippetSuggestions().suggestions, ...suggestions],
@@ -138,4 +145,8 @@ class JavascriptSuggestAdapter implements languages.CompletionItemProvider {
 
 export function useJavascriptSuggestInHtml() {
     monaco.languages.registerCompletionItemProvider(languageNames.html, new JavascriptSuggestAdapter())
+}
+
+export function useJavascriptSuggestFilter(filter: SuggestFilter) {
+    suggestFilter = filter;
 }

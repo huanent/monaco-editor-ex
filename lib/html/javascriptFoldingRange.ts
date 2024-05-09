@@ -8,6 +8,7 @@ import ts from "typescript";
 class JavascriptFoldingRangeAdapter implements languages.FoldingRangeProvider {
     async provideFoldingRanges(model: editor.ITextModel, _context: languages.FoldingContext, _token: CancellationToken): Promise<languages.FoldingRange[] | undefined> {
         const worker = await getJavascriptWorker(model.uri)
+        if (!worker) return;
         const javascriptModel = monaco.editor.getModel(getEmbeddedJavascriptUri(model))
         if (!javascriptModel) return
 

@@ -4,7 +4,7 @@ import type { languages, editor, Position, CancellationToken } from "../monaco";
 import { monaco } from "../monaco"
 import { htmlRegionCache } from "./htmlRegionCache";
 import { getEmbeddedJavascriptUri } from "./utils";
-import { displayPartsToString } from "../javascript/utils";
+import { displayPartsToString, getJavascriptWorker } from "../javascript/utils";
 
 class JavascriptSignatureHelpAdapter implements languages.SignatureHelpProvider {
     signatureHelpTriggerCharacters = ['(', ',']
@@ -41,8 +41,8 @@ class JavascriptSignatureHelpAdapter implements languages.SignatureHelpProvider 
     ): Promise<languages.SignatureHelpResult | undefined> {
         const regions = htmlRegionCache.get(model);
         if (regions.getLanguageAtPosition(position) != languageNames.javascript) return;
-        const workerGetter = await monaco.languages.typescript.getJavaScriptWorker()
-        const worker = await workerGetter(getEmbeddedJavascriptUri(model))
+        const worker = await getJavascriptWorker(model.uri)
+        if (!worker) return;
         const javascriptModel = monaco.editor.getModel(getEmbeddedJavascriptUri(model))
         if (!javascriptModel) return
         const offset = javascriptModel.getOffsetAt(position);

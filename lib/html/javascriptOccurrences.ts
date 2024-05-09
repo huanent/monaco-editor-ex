@@ -3,6 +3,7 @@ import type { CancellationToken, Position, editor, languages } from "../monaco";
 import { htmlRegionCache } from "./htmlRegionCache";
 import { monaco } from "../monaco"
 import { getEmbeddedJavascriptUri, textSpanToRange } from "./utils";
+import { getJavascriptWorker } from "../javascript/utils";
 
 class JavascriptOccurrencesAdapter implements languages.DocumentHighlightProvider {
     public async provideDocumentHighlights(
@@ -12,8 +13,8 @@ class JavascriptOccurrencesAdapter implements languages.DocumentHighlightProvide
     ): Promise<languages.DocumentHighlight[] | undefined> {
         const regions = htmlRegionCache.get(model);
         if (regions.getLanguageAtPosition(position) != languageNames.javascript) return;
-        const workerGetter = await monaco.languages.typescript.getJavaScriptWorker()
-        const worker = await workerGetter(getEmbeddedJavascriptUri(model))
+        const worker = await getJavascriptWorker(model.uri)
+        if (!worker) return;
         const javascriptModel = monaco.editor.getModel(getEmbeddedJavascriptUri(model))
         if (!javascriptModel) return
         const offset = javascriptModel.getOffsetAt(position);
