@@ -22,7 +22,7 @@ class JavascriptOccurrencesAdapter implements languages.DocumentHighlightProvide
         if (model.isDisposed()) {
             return;
         }
-
+        if (!worker.getOccurrencesAtPosition) return;
         const entries = await worker.getOccurrencesAtPosition(javascriptModel.uri.toString(), offset);
 
         if (!entries || model.isDisposed()) {
