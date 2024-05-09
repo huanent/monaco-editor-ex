@@ -15,7 +15,7 @@ interface JavascriptCompletionItem extends languages.CompletionItem {
     offset: number;
 }
 
-type SuggestFilter = (uri: Uri, position: Position, suggestions: JavascriptCompletionItem[]) => JavascriptCompletionItem[];
+type SuggestFilter = (uri: Uri, position: Position, suggestions: any[]) => JavascriptCompletionItem[];
 let suggestFilter: SuggestFilter | undefined
 
 class JavascriptSuggestAdapter implements languages.CompletionItemProvider {
@@ -28,13 +28,18 @@ class JavascriptSuggestAdapter implements languages.CompletionItemProvider {
         const javascriptModel = monaco.editor.getModel(getEmbeddedJavascriptUri(model))
         if (!javascriptModel) return
         const offset = javascriptModel.getOffsetAt(position);
-        var info = await worker.getCompletionsAtPosition(javascriptModel.uri.toString(), offset!)
+        const info = await worker.getCompletionsAtPosition(javascriptModel.uri.toString(), offset!)
+        let entries = info.entries;
 
-        if (!info || model.isDisposed()) {
+        if (!info?.entries || model.isDisposed()) {
             return;
         }
 
-        let suggestions: JavascriptCompletionItem[] = info.entries.map((entry: any) => {
+        if (suggestFilter) {
+            entries = suggestFilter(model.uri, position, entries)
+        }
+
+        let suggestions: JavascriptCompletionItem[] = entries.map((entry: any) => {
             let range = wordRange;
             if (entry.replacementSpan) {
                 const p1 = model.getPositionAt(entry.replacementSpan.start);
@@ -59,10 +64,6 @@ class JavascriptSuggestAdapter implements languages.CompletionItemProvider {
                 tags
             };
         });
-
-        if (suggestFilter) {
-            suggestions = suggestFilter(model.uri, position, suggestions)
-        }
 
         return {
             suggestions: [...snippetSuggestions().suggestions, ...suggestions],
