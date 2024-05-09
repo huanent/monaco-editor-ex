@@ -33,7 +33,10 @@ export interface User{
 
 useJavascriptInHtmlSuggestFilter((uri, range, suggestions) => {
   console.log(uri, range)
-  return suggestions.filter(f => f.insertText != "JSON");
+  return {
+    suggestions: suggestions.filter(f => f.insertText != "JSON"),
+    snippet: true
+  };
 })
 
 useModuleSuggest(["./main", "./user.ts", "order", "order.ts"])
