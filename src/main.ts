@@ -6,7 +6,7 @@ import {
   useModuleResolve,
   useModuleSuggest,
   useDirective,
-  useJavascriptSuggestFilter
+  useJavascriptInHtmlSuggestFilter
 } from "../lib";
 
 useMonacoEx(monaco)
@@ -31,8 +31,8 @@ export interface User{
   `)
 });
 
-useJavascriptSuggestFilter((uri, position, suggestions) => {
-  console.log(uri, position)
+useJavascriptInHtmlSuggestFilter((uri, range, suggestions) => {
+  console.log(uri, range)
   return suggestions.filter(f => f.insertText != "JSON");
 })
 

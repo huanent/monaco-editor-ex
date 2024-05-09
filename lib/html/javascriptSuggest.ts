@@ -7,6 +7,7 @@ import { getWordRange } from "../utils";
 import { htmlRegionCache } from "./htmlRegionCache";
 import { getEmbeddedJavascriptUri, tagToString, Kind } from "./utils";
 import { snippetSuggestions } from "../javascript";
+import { EmbeddedRegion } from "./embeddedSupport";
 
 interface JavascriptCompletionItem extends languages.CompletionItem {
     label: string;
@@ -15,14 +16,15 @@ interface JavascriptCompletionItem extends languages.CompletionItem {
     offset: number;
 }
 
-type SuggestFilter = (uri: Uri, position: Position, suggestions: any[]) => JavascriptCompletionItem[];
+type SuggestFilter = (uri: Uri, regin: EmbeddedRegion, suggestions: any[]) => any[];
 let suggestFilter: SuggestFilter | undefined
 
 class JavascriptSuggestAdapter implements languages.CompletionItemProvider {
     triggerCharacters = ["."];
     async provideCompletionItems(model: editor.ITextModel, position: Position, _context: languages.CompletionContext, _token: CancellationToken): Promise<languages.CompletionList | undefined> {
         const regions = htmlRegionCache.get(model);
-        if (regions.getLanguageAtPosition(position) != languageNames.javascript) return;
+        const region = regions.getRegionAtPosition(position)
+        if (region?.languageId != languageNames.javascript) return;
         const wordRange = getWordRange(model, position);
         const worker = await getJavascriptWorker(model.uri)
         const javascriptModel = monaco.editor.getModel(getEmbeddedJavascriptUri(model))
@@ -36,7 +38,7 @@ class JavascriptSuggestAdapter implements languages.CompletionItemProvider {
         }
 
         if (suggestFilter) {
-            entries = suggestFilter(model.uri, position, entries)
+            entries = suggestFilter(model.uri, region, entries)
         }
 
         let suggestions: JavascriptCompletionItem[] = entries.map((entry: any) => {
@@ -148,6 +150,6 @@ export function useJavascriptSuggestInHtml() {
     monaco.languages.registerCompletionItemProvider(languageNames.html, new JavascriptSuggestAdapter())
 }
 
-export function useJavascriptSuggestFilter(filter: SuggestFilter) {
+export function useJavascriptInHtmlSuggestFilter(filter: SuggestFilter) {
     suggestFilter = filter;
 }
