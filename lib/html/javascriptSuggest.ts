@@ -16,7 +16,7 @@ interface JavascriptCompletionItem extends languages.CompletionItem {
     offset: number;
 }
 
-type SuggestFilter = (uri: Uri, regin: EmbeddedRegion, suggestions: any[]) => any[];
+type SuggestFilter = (uri: Uri, regin: EmbeddedRegion, suggestions: any[]) => { suggestions: any[], snippet: boolean };
 let suggestFilter: SuggestFilter | undefined
 
 class JavascriptSuggestAdapter implements languages.CompletionItemProvider {
@@ -31,14 +31,21 @@ class JavascriptSuggestAdapter implements languages.CompletionItemProvider {
         if (!javascriptModel) return
         const offset = javascriptModel.getOffsetAt(position);
         const info = await worker.getCompletionsAtPosition(javascriptModel.uri.toString(), offset!)
-        let entries = info.entries;
+        let entries = info?.entries;
+        let snippet = true
 
         if (!info?.entries || model.isDisposed()) {
             return;
         }
 
         if (suggestFilter) {
-            entries = suggestFilter(model.uri, region, entries)
+            const filterResult = suggestFilter(model.uri, region, entries)
+            if (filterResult) {
+                if (filterResult.suggestions) {
+                    entries = filterResult.suggestions
+                }
+                snippet = filterResult.snippet
+            }
         }
 
         let suggestions: JavascriptCompletionItem[] = entries.map((entry: any) => {
@@ -67,8 +74,12 @@ class JavascriptSuggestAdapter implements languages.CompletionItemProvider {
             };
         });
 
+        var result = [];
+        if (snippet) result.push(...snippetSuggestions().suggestions)
+        result.push(...suggestions)
+
         return {
-            suggestions: [...snippetSuggestions().suggestions, ...suggestions],
+            suggestions: result,
         };
     }
 
