@@ -15,7 +15,7 @@ interface JavascriptCompletionItem extends languages.CompletionItem {
     offset: number;
 }
 
-type SuggestFilter = (position: Position, suggestions: JavascriptCompletionItem[]) => JavascriptCompletionItem[];
+type SuggestFilter = (uri: Uri, position: Position, suggestions: JavascriptCompletionItem[]) => JavascriptCompletionItem[];
 let suggestFilter: SuggestFilter | undefined
 
 class JavascriptSuggestAdapter implements languages.CompletionItemProvider {
@@ -61,7 +61,7 @@ class JavascriptSuggestAdapter implements languages.CompletionItemProvider {
         });
 
         if (suggestFilter) {
-            suggestions = suggestFilter(position, suggestions)
+            suggestions = suggestFilter(model.uri, position, suggestions)
         }
 
         return {

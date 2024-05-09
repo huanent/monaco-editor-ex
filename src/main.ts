@@ -31,8 +31,8 @@ export interface User{
   `)
 });
 
-useJavascriptSuggestFilter((position, suggestions) => {
-  console.log(position)
+useJavascriptSuggestFilter((uri, position, suggestions) => {
+  console.log(uri, position)
   return suggestions.filter(f => f.insertText != "JSON");
 })
 
