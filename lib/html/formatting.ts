@@ -19,7 +19,7 @@ export async function htmlFormat(html: string, options?: languages.FormattingOpt
         htmlModel.applyEdits(htmlEdits.map(m => toTextEdit(m)))
         const ranges = htmlRegionCache.get(htmlModel).getLanguageRanges(htmlRange);
         const javascriptEdits: languages.TextEdit[] = []
-        const javascriptRanges = ranges.filter(f => f?.languageId == languageNames.javascript && !f?.attributeValue);
+        const javascriptRanges = ranges.filter(f => f?.languageId == languageNames.javascript && f?.type != "attribute" && f?.type != "content");
         for (const range of javascriptRanges) {
             const javascriptRange = {
                 startLineNumber: range.start.line + 2,
