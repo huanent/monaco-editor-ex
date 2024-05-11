@@ -6,7 +6,8 @@ import {
   useModuleResolve,
   useModuleSuggest,
   useDirective,
-  useJavascriptInHtmlSuggestFilter
+  useJavascriptInHtmlSuggestFilter,
+  useContentRegin
 } from "../lib";
 
 useMonacoEx(monaco)
@@ -40,6 +41,7 @@ useJavascriptInHtmlSuggestFilter((uri, range, suggestions) => {
 })
 
 useModuleSuggest(["./main", "./user.ts", "order", "order.ts"])
+
 useDirective([{
   language: "javascript",
   matcher: "k-for",
@@ -51,6 +53,43 @@ useDirective([{
   language: "javascript",
   matcher: "k-if",
 }]);
+
+useContentRegin([{
+  language: "javascript",
+  matcher: (value) => {
+    const result = [];
+    let currentPosition = 0;
+    while (true) {
+      var start = value.indexOf("{{{", currentPosition);
+      if (start == -1) {
+        start = value.indexOf("{{", currentPosition);
+        if (start == -1) break;
+        else {
+          currentPosition = start + 2;
+          var end = value.indexOf("}}", currentPosition);
+          if (end > start) {
+            result.push({
+              start: currentPosition,
+              end: end
+            })
+          }
+        }
+      } else {
+        currentPosition = start + 3;
+        var end = value.indexOf("}}}", currentPosition);
+        if (end > start) {
+          result.push({
+            start: currentPosition,
+            end: end
+          })
+        } else {
+          break;
+        }
+      }
+    }
+    return result
+  }
+}])
 
 function appendContent(value: string): string {
   let result = "";
@@ -112,6 +151,8 @@ const model = monaco.editor.createModel(`
 <div k-for="item obj" k-if="!!abc">
   <div k-content="item"></div>
 </div>
+
+<div>hello {{arr[0]}} world!</div>
 </body>
 </html>
 `, "html", monaco.Uri.parse("file:///main.html"))

@@ -6,12 +6,7 @@
 import { LanguageService, TokenType, Range, Position as HtmlPosition, TextDocument } from 'vscode-html-languageservice';
 import { Position } from '../monaco';
 import { toLsPosition } from './utils';
-import { getDirectiveRegion } from './directive';
-
-export interface LanguageRange extends Range {
-	languageId: string | undefined;
-	attributeValue?: boolean;
-}
+import { LanguageRange, getContentRegions, getDirectiveRegion } from './languageRegion';
 
 export interface HTMLDocumentRegions {
 	versionId: number,
@@ -29,7 +24,7 @@ export interface EmbeddedRegion {
 	languageId: string | undefined;
 	start: number;
 	end: number;
-	attributeValue?: boolean;
+	type?: "tag" | "attribute" | "content"
 	appendContent?: (value: string) => string
 }
 
@@ -98,13 +93,17 @@ export function getDocumentRegions(
 							start++;
 							end--;
 						}
-						regions.push({ languageId: attributeLanguageId, start, end, attributeValue: true });
+						regions.push({ languageId: attributeLanguageId, start, end, type: "attribute" });
 					}
 
 					const directiveRegion = getDirectiveRegion(lastAttributeName!, scanner, document);
 					if (directiveRegion) regions.push(directiveRegion)
 				}
 				lastAttributeName = null;
+				break;
+			case TokenType.Content:
+				const contentRegions = getContentRegions(scanner, document);
+				if (contentRegions) regions.push(...contentRegions)
 				break;
 		}
 		token = scanner.scan();
@@ -150,7 +149,7 @@ function getLanguageRanges(
 					start: startPos,
 					end: endPos,
 					languageId: region.languageId,
-					attributeValue: region.attributeValue
+					type: region.type
 				});
 			}
 			currentOffset = end;
@@ -232,7 +231,7 @@ function getEmbeddedDocument(
 	let padding = ""
 	let appendContentCount = 0;
 	for (let c of contents) {
-		if (c.languageId === languageId && (!ignoreAttributeValues || !c.attributeValue)) {
+		if (c.languageId === languageId && (!ignoreAttributeValues || c.type != "attribute")) {
 			if (shouldAppendContent(currentPos, c.start, oldContent)) {
 				result += padding;
 				padding = ""
@@ -270,12 +269,11 @@ function getEmbeddedDocument(
 	);
 
 	result += Array(appendContentCount).fill('}').join('');
-
 	return TextDocument.create(document.uri, languageId, document.version, result);
 }
 
 function getPrefix(c: EmbeddedRegion) {
-	if (c.attributeValue) {
+	if (c.type == "attribute") {
 		switch (c.languageId) {
 			case 'css':
 				return CSS_STYLE_RULE + '{';
@@ -286,7 +284,7 @@ function getPrefix(c: EmbeddedRegion) {
 	return '';
 }
 function getSuffix(c: EmbeddedRegion) {
-	if (c.attributeValue) {
+	if (c.type == "attribute" || c.type == "content") {
 		switch (c.languageId) {
 			case 'css':
 				return '}';
