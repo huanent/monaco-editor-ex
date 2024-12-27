@@ -42,14 +42,14 @@ export function getModuleKey(value: string | Uri, source: string = "") {
 	if (isRelativeOrAbsolute(value)) {
 		if (source) {
 			value = trimScriptPathExtension(value);
-			return getAbsolutePath(source, value) + ".ts";
+			return getAbsolutePath(source, value) + ".d.ts";
 		} else {
 			value = trimPathPrefix(value);
 			value = trimScriptPathExtension(value);
-			return `file:///${value}.ts`
+			return `file:///${value}.d.ts`
 		}
 	} else {
-		return `file:///node_modules/@types/${value}/index.ts`
+		return `file:///node_modules/@types/${value}/index.d.ts`
 	}
 }
 
