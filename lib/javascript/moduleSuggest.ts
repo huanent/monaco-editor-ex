@@ -33,15 +33,20 @@ export function getModuleSuggest(model: editor.ITextModel, position: Position, s
     if (!items.length) return;
     const moduleOffset = model.getOffsetAt(position) - offset;
     return {
-        suggestions: items.map((m) => ({
-            insertText: m.substring(offset! - moduleNode.start - 1),
-            kind: monaco.languages.CompletionItemKind.File,
-            label: trimPathPrefix(m),
-            range: monaco.Range.fromPositions(
-                position,
-                model.getPositionAt(moduleNode.end - 1 + moduleOffset)
-            ),
-        })),
+        suggestions: items.map((m) => {
+            const label = trimPathPrefix(m);
+            const insertText = m.substring(offset! - moduleNode.start - 1)
+            return {
+                insertText: insertText,
+                kind: monaco.languages.CompletionItemKind.Module,
+                label: label,
+                sortText: '!' + label,
+                range: monaco.Range.fromPositions(
+                    position,
+                    model.getPositionAt(moduleNode.end - 1 + moduleOffset)
+                ),
+            }
+        }),
         incomplete: true,
     };
 }

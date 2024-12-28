@@ -141,6 +141,7 @@ const model = monaco.editor.createModel(`
 <div style="color:red;"></div>
 
 <script>
+  import {} from ""
   var arr=[1,2,3];
   var obj={name:'alex',age:23};
 </script>
