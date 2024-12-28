@@ -30,7 +30,6 @@ export class Module {
     this.state = ModuleState.success;
     this.ast = this.parseAst(value);
     const uris = sameUris(this.uri);
-
     for (const i of uris) {
       monaco.languages.typescript.javascriptDefaults.addExtraLib(value, i);
       monaco.languages.typescript.typescriptDefaults.addExtraLib(value, i);
@@ -40,9 +39,12 @@ export class Module {
   parseAst(content: string) {
     try {
       return parse(content, {
-        sourceType: "module",
-        plugins: ["typescript"],
+        sourceType: "unambiguous",
+        plugins: ["typescript", "jsx"],
         errorRecovery: true,
+        allowAwaitOutsideFunction: true,
+        allowReturnOutsideFunction: true,
+
       });
     } catch (error) {
       return;
