@@ -42,7 +42,7 @@
     "publish": "tsc && vite build && npm publish --registry https://registry.npmjs.org --access public"
   },
   "devDependencies": {
-    "@babel/parser": "^7.21.3",
+    "@babel/parser": "^7.26.3",
     "@types/js-beautify": "^1.13.3",
     "@types/tinycolor2": "^1.4.3",
     "@unocss/autocomplete": "^0.53.4",
@@ -50,7 +50,7 @@
     "happy-dom": "^8.2.3",
     "monaco-editor": "^0.52.2",
     "tinycolor2": "^1.6.0",
-    "typescript": "^5.0.2",
+    "typescript": "^5.7.2",
     "vite": "^4.0.0",
     "vite-plugin-dts": "^2.1.0",
     "vitest": "^0.28.3",
