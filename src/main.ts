@@ -32,7 +32,7 @@ export interface User{
   `)
 });
 
-useJavascriptInHtmlSuggestFilter((uri, range, suggestions) => {
+useJavascriptInHtmlSuggestFilter((_uri, _range, suggestions) => {
   return {
     suggestions: suggestions.filter(f => f.insertText != "JSON"),
     snippet: true
@@ -123,38 +123,38 @@ function appendContent(value: string): string {
   return result;
 }
 
-const model = monaco.editor.createModel(`
-export const customObject={
-  name:""
-}
-
-`, "typescript", monaco.Uri.file("/abc!/myModule.ts"))
-
 // const model = monaco.editor.createModel(`
-// <html>
-// <body>
-// <style>
-// .abc{
-//   color:red;
+// export const customObject={
+//   name:""
 // }
-// </style>
-// <div style="color:red;"></div>
 
-// <script>
-//   var arr=[1,2,3];
-//   var obj={name:'alex',age:23};
-// </script>
-// <div k-for="item arr" k-if="!!abc">
-//   <div k-content="item"></div>
-// </div>
-// <div k-for="item obj" k-if="!!abc">
-//   <div k-content="item"></div>
-// </div>
+// `, "typescript", monaco.Uri.file("/abc!/myModule.ts"))
 
-// <div>hello {{arr[0]}} world!</div>
-// </body>
-// </html>
-// `, "html", monaco.Uri.parse("file:///main.html"))
+const model = monaco.editor.createModel(`
+<html>
+<body>
+<style>
+.abc{
+  color:red;
+}
+</style>
+<div style="color:red;"></div>
+
+<script>
+  var arr=[1,2,3];
+  var obj={name:'alex',age:23};
+</script>
+<div k-for="item arr" k-if="!!abc">
+  <div k-content="item"></div>
+</div>
+<div k-for="item obj" k-if="!!abc">
+  <div k-content="item"></div>
+</div>
+
+<div>hello {{arr[0]}} world!</div>
+</body>
+</html>
+`, "html", monaco.Uri.parse("file:///main.html"))
 
 monaco.editor.create(document.querySelector("#app")!, {
   model

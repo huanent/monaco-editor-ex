@@ -16,8 +16,8 @@ class JavascriptFoldingRangeAdapter implements languages.FoldingRangeProvider {
             return;
         }
 
-        if(!worker.getNavigationBarItems) return
-        const info: ts.NavigationBarItem[] = await worker.getNavigationBarItems(javascriptModel.uri.toString());
+        if(!worker.getNavigationTree) return
+        const info: ts.NavigationBarItem[] = await worker.getNavigationTree(javascriptModel.uri.toString());
         if (!info) return;
         return convert(info, javascriptModel);
     }
