@@ -92,6 +92,14 @@ export function isInnerModel(value: string | editor.IModel) {
         value = value.uri.path;
     }
 
+    if (monaco.languages.typescript.typescriptDefaults.getExtraLibs()[value]) {
+        return true;
+    }
+
+    if (monaco.languages.typescript.javascriptDefaults.getExtraLibs()[value]) {
+        return true;
+    }
+
     return libEntries.some(f => (value as string).endsWith(f[1]))
 }
 
