@@ -1,5 +1,5 @@
 import { languageNames } from "./constants";
-import { Position, monaco, editor } from "./monaco";
+import { Position, monaco, editor, Uri } from "./monaco";
 
 var libEntries = [
     // JavaScript only
@@ -116,4 +116,18 @@ export function newGuid() {
             v = c === "x" ? r : (r & 0x3) | 0x8;
         return v.toString(16);
     });
+}
+
+export function isFileUri(value: string | Uri) {
+    if (!value) return false;
+    if (typeof value === "string") {
+        return value.startsWith("file://")
+    }
+
+    return value.scheme == "file"
+}
+
+export function isRelative(value: string) {
+    if (!value) return false;
+    return value.startsWith('./') || value.startsWith('../')
 }

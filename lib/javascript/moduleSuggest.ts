@@ -1,79 +1,154 @@
 import { languageNames } from "../constants";
 import { IDisposable, Position, editor, languages } from "../monaco";
 import { monaco } from "../monaco";
+import { isFileUri, isRelative } from "../utils";
 import { getModuleByOffset } from "./ast";
-import { Module, getModule } from "./moduleState";
-import { getModuleKey, trimPathPrefix, trimScriptPathExtension } from "./utils";
+import { getModule, Module } from "./moduleState";
+import { getModuleKey } from "./utils";
+
+interface SuggestContext {
+    uri: string,
+    prefix: string
+}
+
+type Callback = (context: SuggestContext) => Promise<string[]> | string[]
+
+interface Options {
+    callback?: Callback,
+    triggerCharacters: string[]
+}
+
+export type Suggestion = Options | Callback | string[] | undefined
+
+let initialized = false;
+let disposables: IDisposable[] = [];
+let suggestion: Suggestion;
 
 class ModuleSuggestAdapter
     implements languages.CompletionItemProvider {
     triggerCharacters = ["/"];
+
+    constructor() {
+        if (suggestion && "triggerCharacters" in suggestion) {
+            this.triggerCharacters = suggestion.triggerCharacters
+        }
+    }
     async provideCompletionItems(
         model: editor.ITextModel,
         position: Position
     ): Promise<languages.CompletionList | undefined> {
-        const suggestions = await getSuggestions();
-        return getModuleSuggest(model, position, suggestions);
+        return getModuleSuggest(model, position, suggestion);
     }
 }
 
-export function getModuleSuggest(model: editor.ITextModel, position: Position, suggestions: string[]) {
+function dispose() {
+    initialized = false;
+    suggestion = undefined;
+    disposables.forEach((d) => d && d.dispose());
+    disposables.length = 0;
+}
+
+
+export function useJavascriptModuleSuggest(options?: Suggestion) {
+    suggestion = options;
+    if (initialized) return dispose;
+    initialized = true;
+    disposables.push(monaco.languages.registerCompletionItemProvider(languageNames.javascript, new ModuleSuggestAdapter()))
+    disposables.push(monaco.languages.registerCompletionItemProvider(languageNames.typescript, new ModuleSuggestAdapter()))
+    return dispose;
+}
+
+export async function getModuleSuggest(model: editor.ITextModel, position: Position, suggestion: Suggestion) {
     let module: Module | undefined;
     let offset: number | undefined;
-    module = getModule(getModuleKey(model.uri));
+    const key = getModuleKey(model.uri);
+    module = getModule(key);
     offset = model.getOffsetAt(position);
     if (!module || !offset) return;
     const moduleNode = getModuleByOffset(module.ast, offset);
     if (!moduleNode) return;
     const currentModelPath = getModuleKey(model.uri)
     const prefix = moduleNode.value.substring(0, offset - moduleNode.start)
-    const items = suggestions
-        .map(m => trimScriptPathExtension(m))
-        .filter((f) => f.startsWith(prefix) && getModuleKey(f) != currentModelPath);
-    if (!items.length) return;
+    let suggestions = await getSuggestions(suggestion, { uri: key, prefix: prefix })
     const moduleOffset = model.getOffsetAt(position) - offset;
-    return {
-        suggestions: items.map((m) => {
-            const label = trimPathPrefix(m);
-            const insertText = m.substring(offset! - moduleNode.start - 1)
-            return {
+
+    function transformSuggestions() {
+        var result: languages.CompletionItem[] = [];
+        if (prefix.endsWith("//") || prefix.endsWith("/.") || prefix.endsWith("/..")) return result;
+
+        const { basePath, relative } = getBasePath(key, prefix);
+
+        for (const item of suggestions) {
+            if (getModuleKey(item) == currentModelPath) continue;
+            let label = item;
+            let insertText = item;
+            let kind = monaco.languages.CompletionItemKind.Module;
+
+            if (isRelative(prefix)) {
+                if (!item.startsWith(basePath)) continue;
+                const path = item.substring(basePath.length + 1);
+                const slugIndex = path.indexOf('/');
+                if (slugIndex > -1) {
+                    label = path.substring(0, slugIndex);
+                    kind = monaco.languages.CompletionItemKind.Folder;
+                } else {
+                    label = path;
+                    kind = monaco.languages.CompletionItemKind.File;
+                }
+                insertText = `${relative}/${label}`;
+            } else {
+                if (isFileUri(item)) continue;
+                if (!item.startsWith(prefix)) continue;
+            }
+
+            insertText = insertText.substring(offset! - moduleNode!.start - 1)
+            if (!insertText) continue;
+
+            result.push({
                 insertText: insertText,
-                kind: monaco.languages.CompletionItemKind.Module,
+                kind: kind,
                 label: label,
                 sortText: '!' + label,
                 range: monaco.Range.fromPositions(
                     position,
-                    model.getPositionAt(moduleNode.end - 1 + moduleOffset)
+                    model.getPositionAt(moduleNode!.end - 1 + moduleOffset)
                 ),
-            }
-        }),
+            })
+        }
+        return result;
+    }
+
+    return {
+        suggestions: transformSuggestions(),
         incomplete: true,
     };
 }
 
-let initialized = false;
-let disposables: IDisposable[] = [];
-let _suggestions: (() => Promise<string[]>) | string[] | undefined;
+export function getBasePath(uri: string, relative: string) {
+    uri = uri.substring(0, uri.lastIndexOf('/'))
+    relative = relative.substring(0, relative.lastIndexOf('/'))
+    const start = []
 
-async function getSuggestions() {
-    if (!_suggestions) return [];
-    if (Array.isArray(_suggestions)) return _suggestions;
-    return await _suggestions();
+    for (const item of relative.split('/')) {
+        if (!item) continue
+        if (item == '..') {
+            uri = uri.substring(0, uri.lastIndexOf('/'))
+        } else if (item != '.') {
+            uri = [uri, item].join('/')
+        }
+        start.push(item);
+    }
+    return { basePath: uri, relative: start.join('/') };
 }
 
-function dispose() {
-    initialized = false;
-    _suggestions = undefined;
-    disposables.forEach((d) => d && d.dispose());
-    disposables.length = 0;
-}
+async function getSuggestions(suggestion: Suggestion, context: SuggestContext) {
+    if (!suggestion) return [];
+    if (Array.isArray(suggestion)) return suggestion;
 
+    if (typeof suggestion === "function") {
+        return await suggestion(context);
+    }
 
-export function useJavascriptModuleSuggest(modules?: (() => Promise<string[]>) | string[]) {
-    _suggestions = modules;
-    if (initialized) return dispose;
-    initialized = true;
-    disposables.push(monaco.languages.registerCompletionItemProvider(languageNames.javascript, new ModuleSuggestAdapter()))
-    disposables.push(monaco.languages.registerCompletionItemProvider(languageNames.typescript, new ModuleSuggestAdapter()))
-    return dispose;
+    if (!suggestion.callback) return []
+    return await suggestion.callback(context)
 }

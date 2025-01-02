@@ -18,7 +18,7 @@ import {
   useJavascriptFoldingRangeInHtml,
 } from "./html";
 import { tryInitMonaco } from "./monaco";
-import { useJavascriptSnippet, useJavascriptModuleSuggest } from "./javascript";
+import { useJavascriptSnippet, useJavascriptModuleSuggest, Suggestion } from "./javascript";
 import { removeModules } from "./javascript/moduleState"
 import { monaco } from "./monaco";
 export { useUnocss, htmlFormat, useDirective, useContentRegin, useJavascriptInHtmlSuggestFilter } from "./html"
@@ -44,9 +44,9 @@ export function useMonacoEx(monacoInstance: typeof Monaco) {
   useJavascriptInHtml();
 }
 
-export function useModuleSuggest(modules?: (() => Promise<string[]>) | string[]) {
-  useJavascriptModuleSuggest(modules)
-  useHtmlModuleSuggest(modules)
+export function useModuleSuggest(options?: Suggestion) {
+  useJavascriptModuleSuggest(options)
+  useHtmlModuleSuggest(options)
 }
 
 export function removeAllModules() {

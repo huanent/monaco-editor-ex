@@ -1,42 +1,40 @@
 import { languageNames } from "../constants";
-import { getModuleSuggest } from "../javascript";
+import { getModuleSuggest, Suggestion } from "../javascript";
 import { IDisposable, Position, editor, languages } from "../monaco";
 import { monaco } from "../monaco";
 import { getEmbeddedJavascriptUri } from "./utils";
 
-class ModuleSuggestAdapter
-    implements languages.CompletionItemProvider {
+let initialized = false;
+let disposables: IDisposable[] = [];
+let suggestion: Suggestion;
+
+class ModuleSuggestAdapter implements languages.CompletionItemProvider {
     triggerCharacters = ["/"];
+
+    constructor() {
+        if (suggestion && "triggerCharacters" in suggestion) {
+            this.triggerCharacters = suggestion.triggerCharacters
+        }
+    }
     async provideCompletionItems(
         model: editor.ITextModel,
         position: Position
     ): Promise<languages.CompletionList | undefined> {
         var javascriptModel = monaco.editor.getModel(getEmbeddedJavascriptUri(model))
         if (!javascriptModel) return;
-        const suggestions = await getSuggestions();
-        return getModuleSuggest(javascriptModel, position, suggestions);
+        return getModuleSuggest(javascriptModel, position, suggestion);
     }
-}
-
-let initialized = false;
-let disposables: IDisposable[] = [];
-let _suggestions: (() => Promise<string[]>) | string[] | undefined;
-
-async function getSuggestions() {
-    if (!_suggestions) return [];
-    if (Array.isArray(_suggestions)) return _suggestions;
-    return await _suggestions();
 }
 
 function dispose() {
     initialized = false;
-    _suggestions = [];
+    suggestion = [];
     disposables.forEach((d) => d && d.dispose());
     disposables.length = 0;
 }
 
-export function useHtmlModuleSuggest(modules?: (() => Promise<string[]>) | string[]) {
-    _suggestions = modules;
+export function useHtmlModuleSuggest(options?: Suggestion) {
+    suggestion = options;
     if (initialized) return dispose;
     initialized = true;
     disposables.push(monaco.languages.registerCompletionItemProvider(languageNames.html, new ModuleSuggestAdapter()))

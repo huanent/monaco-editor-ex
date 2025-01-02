@@ -13,7 +13,6 @@ import {
 useMonacoEx(monaco)
 useUnocss()
 useModuleResolve(path => {
-  console.log(path)
   if (path.startsWith("file:///node_modules/@types/module:myLib/index")) {
     return Promise.resolve(`
 import {User} from './fileA';
@@ -26,9 +25,10 @@ export function myLib():User{
   }
   return Promise.resolve(`
 export interface User{ 
-  name:string;
-  age:number
+      name:string;
+      age:number
 }
+
   `)
 });
 
@@ -39,7 +39,12 @@ useJavascriptInHtmlSuggestFilter((_uri, _range, suggestions) => {
   };
 })
 
-useModuleSuggest(["module:main"])
+useModuleSuggest({
+  triggerCharacters: ["m", ".", "/"],
+  async callback(ctx) {
+    return ["module2.mylib", "module.mylib", "file:///abc", "file:///user/index"]
+  }
+})
 
 useDirective([{
   language: "javascript",
@@ -123,39 +128,17 @@ function appendContent(value: string): string {
   return result;
 }
 
-// const model = monaco.editor.createModel(`
-// export const customObject={
-//   name:""
-// }
+monaco.editor.createModel(`
+export const customObject={
+  name:""
+}
 
-// `, "typescript", monaco.Uri.file("/abc!/myModule.ts"))
+`, "typescript", monaco.Uri.file("/myModule.ts"))
 
 const model = monaco.editor.createModel(`
-<html>
-<body>
-<style>
-.abc{
-  color:red;
-}
-</style>
-<div style="color:red;"></div>
+import {} from "./myModule"
 
-<script>
-  import {} from ""
-  var arr=[1,2,3];
-  var obj={name:'alex',age:23};
-</script>
-<div k-for="item arr" k-if="!!abc">
-  <div k-content="item"></div>
-</div>
-<div k-for="item obj" k-if="!!abc">
-  <div k-content="item"></div>
-</div>
-
-<div>hello {{arr[0]}} world!</div>
-</body>
-</html>
-`, "html", monaco.Uri.parse("file:///main.html"))
+`, "typescript", monaco.Uri.file("/main.ts"))
 
 monaco.editor.create(document.querySelector("#app")!, {
   model
