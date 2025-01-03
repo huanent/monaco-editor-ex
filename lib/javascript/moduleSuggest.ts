@@ -8,7 +8,8 @@ import { getModuleKey } from "./utils";
 
 interface SuggestContext {
     uri: string,
-    prefix: string
+    prefix: string,
+    relative: boolean
 }
 
 type Callback = (context: SuggestContext) => Promise<string[]> | string[]
@@ -69,7 +70,9 @@ export async function getModuleSuggest(model: editor.ITextModel, position: Posit
     if (!moduleNode) return;
     const currentModelPath = getModuleKey(model.uri)
     const prefix = moduleNode.value.substring(0, offset - moduleNode.start)
-    let suggestions = await getSuggestions(suggestion, { uri: key, prefix: prefix })
+    const isRelativePrefix = isRelative(prefix)
+    const context: SuggestContext = { uri: key, prefix: prefix, relative: isRelativePrefix };
+    let suggestions = await getSuggestions(suggestion, context)
     const moduleOffset = model.getOffsetAt(position) - offset;
 
     function transformSuggestions() {
@@ -84,7 +87,7 @@ export async function getModuleSuggest(model: editor.ITextModel, position: Posit
             let insertText = item;
             let kind = monaco.languages.CompletionItemKind.Module;
 
-            if (isRelative(prefix)) {
+            if (isRelativePrefix) {
                 if (!item.startsWith(basePath)) continue;
                 const path = item.substring(basePath.length + 1);
                 const slugIndex = path.indexOf('/');

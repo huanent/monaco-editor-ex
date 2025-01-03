@@ -41,7 +41,7 @@ useJavascriptInHtmlSuggestFilter((_uri, _range, suggestions) => {
 
 useModuleSuggest({
   triggerCharacters: ["m", ".", "/"],
-  async callback(ctx) {
+  async callback() {
     return ["module2.mylib", "module.mylib", "file:///abc", "file:///user/index"]
   }
 })

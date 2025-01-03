@@ -31,6 +31,10 @@ export function trimScriptPathExtension(path: string) {
 		path = path.substring(0, path.length - 3)
 	}
 
+	if (path.endsWith(".jsx") || path.endsWith(".tsx")) {
+		path = path.substring(0, path.length - 4)
+	}
+
 	return path;
 }
 

@@ -131,3 +131,9 @@ export function isRelative(value: string) {
     if (!value) return false;
     return value.startsWith('./') || value.startsWith('../')
 }
+
+export function getFileName(path: string) {
+    const index = path.lastIndexOf("/")
+    if (index == -1) return path;
+    return path.substring(index)
+}

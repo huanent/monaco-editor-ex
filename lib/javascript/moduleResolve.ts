@@ -1,9 +1,22 @@
 import type { IDisposable, editor } from "../monaco"
 import { monaco } from "../monaco"
-import { isInnerModel, isScript } from "../utils";
+import { getFileName, isInnerModel, isRelative, isScript } from "../utils";
 import { getModulesFromAst } from "./ast";
 import { Module, ModuleState, createModule, getModule, removeModule } from "./moduleState";
 import { getModuleKey } from "./utils";
+
+let initialized = false;
+let disposables: IDisposable[] = [];
+
+type LoaderCallback = (path: string) => Promise<string> | string | undefined;
+
+export interface LoaderOptions {
+    onlyEmitEndsWithExtensions?: boolean
+    callback?: LoaderCallback
+}
+
+type ModuleLoader = LoaderOptions | LoaderCallback | undefined;
+let moduleLoader: ModuleLoader | undefined
 
 function didCreateModel(model: editor.IModel) {
     if (model.uri.scheme == "memory") return;
@@ -59,28 +72,31 @@ async function resolveModule(name: string, source: string) {
     module.state = ModuleState.loading;
 
     try {
-        const code = await moduleLoader!(uri);
+        let code = undefined
+        if (typeof moduleLoader === "function") {
+            code = await moduleLoader(uri)
+        } else {
+            if (moduleLoader?.onlyEmitEndsWithExtensions && getFileName(name).indexOf('.') < 1 && isRelative(name)) {
+                return
+            }
+            code = await moduleLoader?.callback?.(uri)
+        }
         module.content = code;
-        resolveModules(module);
+        if (code) resolveModules(module);
     } catch (error) {
         module.state = ModuleState.error;
     }
 }
 
-let initialized = false;
-let disposables: IDisposable[] = [];
-type ModuleLoader = (path: string) => Promise<string>;
-let moduleLoader: ModuleLoader | undefined
-
 function dispose() {
     initialized = false;
     moduleLoader = undefined;
-    disposables.forEach((d) => d && d.dispose());
+    disposables.forEach((d) => d && d?.dispose());
     disposables.length = 0;
 }
 
-export function useModuleResolve(onModuleLoad: ModuleLoader) {
-    moduleLoader = onModuleLoad;
+export function useModuleResolve(options: ModuleLoader) {
+    moduleLoader = options;
     if (initialized) return dispose;
     initialized = true;
     disposables.push(monaco.editor.onDidCreateModel((m) => didCreateModel(m)))
