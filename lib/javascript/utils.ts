@@ -1,6 +1,7 @@
 import { monaco } from "../monaco"
 import { Uri, languages, editor } from "../monaco"
 import type { SymbolDisplayPart } from "typescript";
+import { isSymbolString } from "../utils";
 
 export async function getJavascriptWorker(uri: Uri) {
 	const workerGetter = await monaco.languages.typescript.getJavaScriptWorker()
@@ -42,6 +43,8 @@ export function getModuleKey(value: string | Uri, source: string = "") {
 	if (typeof value != "string") {
 		return decodeURIComponent(value.toString())
 	}
+
+	if (isSymbolString(value)) return
 
 	if (isRelativeOrAbsolute(value)) {
 		if (source) {

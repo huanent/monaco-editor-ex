@@ -12,24 +12,28 @@ import {
 
 useMonacoEx(monaco)
 useUnocss()
-useModuleResolve(path => {
-  if (path.startsWith("file:///node_modules/@types/module:myLib/index")) {
-    return Promise.resolve(`
-import {User} from './fileA';
-export function myLib():User{ 
-  return {
-    name:"jobs"
+useModuleResolve({
+  onlyEmitEndsWithExtensions: true,
+  callback(path) {
+    console.log(path)
+    if (path.startsWith("file:///node_modules/@types/module:myLib/index")) {
+      return Promise.resolve(`
+  import {User} from './fileA';
+  export function myLib():User{ 
+    return {
+      name:"jobs"
+    }
   }
-}
+      `)
+    }
+    return Promise.resolve(`
+  export interface User{ 
+        name:string;
+        age:number
+  }
+  
     `)
   }
-  return Promise.resolve(`
-export interface User{ 
-      name:string;
-      age:number
-}
-
-  `)
 });
 
 useJavascriptInHtmlSuggestFilter((_uri, _range, suggestions) => {
@@ -136,7 +140,7 @@ export const customObject={
 `, "typescript", monaco.Uri.file("/myModule.ts"))
 
 const model = monaco.editor.createModel(`
-import {} from "./myModule"
+import {} from "./myModule.tsx"
 
 `, "typescript", monaco.Uri.file("/main.ts"))
 

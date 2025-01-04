@@ -22,6 +22,7 @@ function didCreateModel(model: editor.IModel) {
     if (model.uri.scheme == "memory") return;
     if (!isScript(model) || isInnerModel(model)) return;
     var uri = getModuleKey(model.uri)
+    if (!uri) return;
     var module = getModule(uri) ?? createModule(uri, model.getValue())
     resolveModules(module)
 
@@ -33,16 +34,19 @@ function didCreateModel(model: editor.IModel) {
 
 function willDisposeModel(model: editor.IModel) {
     if (!isScript(model)) return;
-    removeModule(getModuleKey(model.uri))
+    var uri = getModuleKey(model.uri);
+    if (uri) removeModule(uri)
 }
 
 function didChangeModelLanguage(e: { model: editor.IModel, oldLanguage: string }) {
     if (isScript(e.oldLanguage)) {
-        removeModule(getModuleKey(e.model.uri))
+        var uri = getModuleKey(e.model.uri)
+        if (uri) removeModule(uri)
     }
 
     if (isScript(e.model)) {
         var uri = getModuleKey(e.model.uri)
+        if (!uri) return
         getModule(uri) ?? createModule(uri, e.model.getValue())
     }
 }
@@ -58,7 +62,7 @@ export function resolveModules(module: Module) {
 
 async function resolveModule(name: string, source: string) {
     const uri = getModuleKey(name, source);
-    if (isInnerModel(uri)) return;
+    if (!uri || isInnerModel(uri)) return;
     const module = getModule(uri) ?? createModule(uri);
 
     if (

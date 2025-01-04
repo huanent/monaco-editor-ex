@@ -137,3 +137,18 @@ export function getFileName(path: string) {
     if (index == -1) return path;
     return path.substring(index)
 }
+
+
+export function isSymbolString(value: string) {
+    for (let i = 0; i < value.length; i++) {
+        const code = value.charCodeAt(i);
+        if ((code >= 32 && code <= 47) || (code >= 58 && code <= 64) ||
+            (code >= 91 && code <= 96) || (code >= 123 && code <= 126)) {
+            continue;
+        } else {
+            return false
+        }
+    }
+
+    return true;
+}

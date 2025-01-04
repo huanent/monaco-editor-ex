@@ -63,6 +63,7 @@ export async function getModuleSuggest(model: editor.ITextModel, position: Posit
     let module: Module | undefined;
     let offset: number | undefined;
     const key = getModuleKey(model.uri);
+    if (!key) return;
     module = getModule(key);
     offset = model.getOffsetAt(position);
     if (!module || !offset) return;
@@ -79,7 +80,7 @@ export async function getModuleSuggest(model: editor.ITextModel, position: Posit
         var result: languages.CompletionItem[] = [];
         if (prefix.endsWith("//") || prefix.endsWith("/.") || prefix.endsWith("/..")) return result;
 
-        const { basePath, relative } = getBasePath(key, prefix);
+        const { basePath, relative } = getBasePath(key!, prefix);
 
         for (const item of suggestions) {
             if (getModuleKey(item) == currentModelPath) continue;
